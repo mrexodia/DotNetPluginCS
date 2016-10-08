@@ -1,6 +1,4 @@
-using System;
-using System.Runtime.InteropServices;
-using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 using DotNetPlugin.Script;
 using DotNetPlugin.SDK;
@@ -25,40 +23,31 @@ namespace DotNetPlugin
 
         public static bool cbDumpProcessCommand(int argc, string[] argv)
         {
-            var num1 = argc >= 2 ? Bridge.DbgValFromString(argv[1]) : TitanEngine.GetContextData(35U);
-            IntPtr num2 = Marshal.AllocHGlobal(Bridge.MAX_MODULE_SIZE);
-            string empty = string.Empty;
-            if (!Bridge.DbgGetModuleAt(num1, num2))
+            var addr = argc >= 2 ? Bridge.DbgValFromString(argv[1]) : Bridge.DbgValFromString("cip");
+            PLog.WriteLine("[DotNet TEST] addr: {0}", addr.ToPtrString());
+            var modinfo = new Module.ModuleInfo();
+            if (!Module.InfoFromAddr(addr, ref modinfo))
             {
-                PLog.WriteLine("[DotNet TEST] no module at {0}...\n", num1);
+                PLog.WriteLine("[DotNet TEST] Module.InfoFromAddr failed...");
                 return false;
             }
-            string stringAnsi = Marshal.PtrToStringAnsi(num2);
-            var ImageBase = Bridge.DbgModBaseFromName(stringAnsi);
-            if (ImageBase == IntPtr.Zero)
+            PLog.WriteLine("[DotNet TEST] InfoFromAddr success, base: {0}", modinfo.@base.ToPtrString());
+            var hProcess = Bridge.DbgValFromString("$hProcess");
+            var saveFileDialog = new SaveFileDialog
             {
-                PLog.WriteLine("[DotNet TEST] could not get module base...");
-                return false;
-            }
-            var processInformation = (WAPI.PROCESS_INFORMATION)Marshal.PtrToStructure(TitanEngine.TitanGetProcessInformation(), typeof(WAPI.PROCESS_INFORMATION));
-            var hProcess = processInformation.hProcess;// (structure != null ? (Plugins.PROCESS_INFORMATION) structure : processInformation).hProcess;
-            StringBuilder lpBaseName = new StringBuilder();
-            lpBaseName.Append(stringAnsi);
-            if ((int)WAPI.GetModuleBaseNameA(hProcess, ImageBase, lpBaseName, 256U) == 0)
-            {
-                PLog.WriteLine("[DotNet TEST] could not get module base name...");
-                return false;
-            }
-            string str1 = lpBaseName.ToString();
-            string str2 = str1.Substring(0, str1.IndexOf(".")) + "_dump" + str1.Substring(str1.IndexOf("."), checked(str1.Length - str1.IndexOf(".")));
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "Executables (*.dll,*.exe)|*.exe|All Files (*.*)|*.*";
-            saveFileDialog.RestoreDirectory = true;
-            saveFileDialog.FileName = str2;
-            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                Filter = "Executables (*.dll,*.exe)|*.exe|All Files (*.*)|*.*",
+                RestoreDirectory = true,
+                FileName = modinfo.name
+            };
+            var result = DialogResult.Cancel;
+            var t = new Thread(() => result = saveFileDialog.ShowDialog());
+            t.SetApartmentState(ApartmentState.STA);
+            t.Start();
+            t.Join();
+            if (result == DialogResult.OK)
             {
                 string fileName = saveFileDialog.FileName;
-                if (!TitanEngine.DumpProcess(hProcess, ImageBase, fileName, num1))
+                if (!TitanEngine.DumpProcess(hProcess, modinfo.@base, fileName, addr))
                 {
                     PLog.WriteLine("[DotNet TEST] DumpProcess failed...");
                     return false;

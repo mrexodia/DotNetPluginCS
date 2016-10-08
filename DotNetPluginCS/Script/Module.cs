@@ -45,5 +45,14 @@ namespace DotNetPlugin.Script
             var listInfo = new Bridge.ListInfo();
             return listInfo.ToArray<ModuleSectionInfo>(ScriptModuleSectionListFromAddr(addr, ref listInfo));
         }
+
+        [DllImport("x64dbg.dll", CallingConvention = CallingConvention.Cdecl,
+             EntryPoint = "?InfoFromAddr@Module@Script@@YA_N_KPEAUModuleInfo@12@@Z")]
+        private static extern bool ScriptModuleInfoFromAddr(IntPtr addr, ref ModuleInfo info);
+
+        public static bool InfoFromAddr(IntPtr addr, ref ModuleInfo info)
+        {
+            return ScriptModuleInfoFromAddr(addr, ref info);
+        }
     }
 }
