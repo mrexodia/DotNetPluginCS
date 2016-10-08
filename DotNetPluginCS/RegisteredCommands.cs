@@ -70,14 +70,12 @@ namespace DotNetPlugin
 
         public static bool cbModuleEnum(int argc, string[] argv)
         {
-            var modList = Module.GetList();
-            if (modList == null)
+            foreach (var mod in Module.GetList())
             {
-                PLog.WriteLine("[DotNet TEST] Script.ModuleGetList failed...");
-                return false;
-            }
-            foreach (var mod in modList)
                 PLog.WriteLine("[DotNet TEST] {0} {1}", mod.@base.ToPtrString(), mod.name);
+                foreach (var section in Module.SectionListFromAddr(mod.@base))
+                    PLog.WriteLine("[DotNet TEST]    {0} \"{1}\"", section.addr.ToPtrString(), section.name);
+            }
             return true;
         }
     }
