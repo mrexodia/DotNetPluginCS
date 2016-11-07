@@ -24,6 +24,7 @@ namespace DotNetPlugin.SDK
         public const int MAX_MNEMONIC_SIZE = 64;
         public const int PAGE_SIZE = 4096;
 
+#if AMD64
         [DllImport("x64bridge.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern bool GuiGetLineWindow(string title, ref IntPtr text);
 
@@ -47,6 +48,31 @@ namespace DotNetPlugin.SDK
 
         [DllImport("x64bridge.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern bool BridgeFree(IntPtr size);
+#else
+        [DllImport("x32bridge.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern bool GuiGetLineWindow(string title, ref IntPtr text);
+
+        [DllImport("x32bridge.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr DbgValFromString(string Sstring);
+
+        [DllImport("x32bridge.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern bool DbgGetModuleAt(IntPtr addr, IntPtr text);
+
+        [DllImport("x32bridge.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr DbgModBaseFromName(string name);
+
+        [DllImport("x32bridge.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern bool DbgIsDebugging();
+
+        [DllImport("x32bridge.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern bool DbgCmdExec(string cmd);
+
+        [DllImport("x32bridge.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern bool BridgeAlloc(IntPtr size);
+
+        [DllImport("x32bridge.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern bool BridgeFree(IntPtr size);
+#endif
 
         public struct ICONDATA
         {
