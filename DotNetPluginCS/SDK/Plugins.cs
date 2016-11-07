@@ -12,6 +12,7 @@ namespace DotNetPlugin.SDK
 
         public delegate void CBPLUGIN(CBTYPE cbType, ref IntPtr callbackInfo);
 
+#if AMD64
         [DllImport("x64dbg.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void _plugin_logprintf(string format);
 
@@ -38,6 +39,34 @@ namespace DotNetPlugin.SDK
 
         [DllImport("x64dbg.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern bool _plugin_unregistercommand(int pluginHandle, string command);
+#else
+        [DllImport("x32dbg.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void _plugin_logprintf(string format);
+
+        [DllImport("x32dbg.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void _plugin_logputs(string text);
+
+        [DllImport("x32dbg.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void _plugin_registercallback(int pluginHandle, CBTYPE cbType, CBPLUGIN cbPlugin);
+
+        [DllImport("x32dbg.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern bool _plugin_unregistercallback(int pluginHandle, CBTYPE cbType);
+
+        [DllImport("x32dbg.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern bool _plugin_menuaddentry(int hMenu, int hEntry, string title);
+
+        [DllImport("x32dbg.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int _plugin_menuadd(int hMenu, string title);
+
+        [DllImport("x32dbg.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern bool _plugin_menuclear(int hMenu);
+
+        [DllImport("x32dbg.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern bool _plugin_registercommand(int pluginHandle, string command, CBPLUGINCOMMAND cbCommand, bool debugonly);
+
+        [DllImport("x32dbg.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern bool _plugin_unregistercommand(int pluginHandle, string command);
+#endif
 
         public struct PLUG_INITSTRUCT
         {
