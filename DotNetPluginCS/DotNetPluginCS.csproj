@@ -76,9 +76,9 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if $(PlatformName) == x86 (
-move $(TargetDir)$(TargetName).dll $(TargetDir)$(TargetName).dp32
+move "$(TargetDir)$(TargetName).dll" "$(TargetDir)$(TargetName).dp32"
 ) ELSE (
-move $(TargetDir)$(TargetName).dll $(TargetDir)$(TargetName).dp64
+move "$(TargetDir)$(TargetName).dll" "$(TargetDir)$(TargetName).dp64"
 )</PostBuildEvent>
   </PropertyGroup>
   <Import Project="../packages/UnmanagedExports.1.2.7/tools/RGiesecke.DllExport.targets" Condition="Exists('../packages/UnmanagedExports.1.2.7/tools/RGiesecke.DllExport.targets')" />
