@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace DotNetPlugin.SDK
@@ -25,54 +28,38 @@ namespace DotNetPlugin.SDK
         public const int PAGE_SIZE = 4096;
 
 #if AMD64
-        [DllImport("x64bridge.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern bool GuiGetLineWindow(string title, ref IntPtr text);
-
-        [DllImport("x64bridge.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr DbgValFromString(string Sstring);
-
-        [DllImport("x64bridge.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern bool DbgGetModuleAt(IntPtr addr, IntPtr text);
-
-        [DllImport("x64bridge.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr DbgModBaseFromName(string name);
-
-        [DllImport("x64bridge.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern bool DbgIsDebugging();
-
-        [DllImport("x64bridge.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern bool DbgCmdExec(string cmd);
-
-        [DllImport("x64bridge.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern bool BridgeAlloc(IntPtr size);
-
-        [DllImport("x64bridge.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern bool BridgeFree(IntPtr size);
+        private const string dll = "x64bridge.dll";
 #else
-        [DllImport("x32bridge.dll", CallingConvention = CallingConvention.Cdecl)]
+        private const string dll = "x32bridge.dll";
+#endif
+        private const CallingConvention cdecl = CallingConvention.Cdecl;
+        
+        [DllImport(dll, CallingConvention = cdecl)]
         public static extern bool GuiGetLineWindow(string title, ref IntPtr text);
 
-        [DllImport("x32bridge.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(dll, CallingConvention = cdecl)]
         public static extern IntPtr DbgValFromString(string Sstring);
 
-        [DllImport("x32bridge.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(dll, CallingConvention = cdecl)]
         public static extern bool DbgGetModuleAt(IntPtr addr, IntPtr text);
 
-        [DllImport("x32bridge.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(dll, CallingConvention = cdecl)]
         public static extern IntPtr DbgModBaseFromName(string name);
 
-        [DllImport("x32bridge.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(dll, CallingConvention = cdecl)]
         public static extern bool DbgIsDebugging();
 
-        [DllImport("x32bridge.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(dll, CallingConvention = cdecl)]
         public static extern bool DbgCmdExec(string cmd);
 
-        [DllImport("x32bridge.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(dll, CallingConvention = cdecl, CharSet = CharSet.Ansi)]
+        public static extern bool DbgCmdExecDirect(string cmd);
+
+        [DllImport(dll, CallingConvention = cdecl)]
         public static extern bool BridgeAlloc(IntPtr size);
 
-        [DllImport("x32bridge.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(dll, CallingConvention = cdecl)]
         public static extern bool BridgeFree(IntPtr size);
-#endif
 
         public struct ICONDATA
         {

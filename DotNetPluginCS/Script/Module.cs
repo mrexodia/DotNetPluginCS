@@ -27,13 +27,14 @@ namespace DotNetPlugin.Script
         }
 
 #if AMD64
-        [DllImport("x64dbg.dll", CallingConvention = CallingConvention.Cdecl,
-             EntryPoint = "?GetList@Module@Script@@YA_NPEAUListInfo@@@Z")]
+        private const string dll = "x64dbg.dll";
 #else
-        [DllImport("x32dbg.dll", CallingConvention = CallingConvention.Cdecl,
-             EntryPoint = "?GetList@Module@Script@@YA_NPAUListInfo@@@Z")]
+        private const string dll = "x32dbg.dll";
 #endif
-
+        private const CallingConvention cdecl = CallingConvention.Cdecl;
+        
+        [DllImport(dll, CallingConvention = cdecl,
+             EntryPoint = "?GetList@Module@Script@@YA_NPEAUListInfo@@@Z")]
         private static extern bool ScriptModuleGetList(ref Bridge.ListInfo listInfo);
 
         public static ModuleInfo[] GetList()
@@ -41,15 +42,9 @@ namespace DotNetPlugin.Script
             var listInfo = new Bridge.ListInfo();
             return listInfo.ToArray<ModuleInfo>(ScriptModuleGetList(ref listInfo));
         }
-
-#if AMD64
-        [DllImport("x64dbg.dll", CallingConvention = CallingConvention.Cdecl,
+        
+        [DllImport(dll, CallingConvention = cdecl,
              EntryPoint = "?SectionListFromAddr@Module@Script@@YA_N_KPEAUListInfo@@@Z")]
-#else
-        [DllImport("x32dbg.dll", CallingConvention = CallingConvention.Cdecl,
-             EntryPoint = "?SectionListFromAddr@Module@Script@@YA_NKPAUListInfo@@@Z")]
-#endif
-
         private static extern bool ScriptModuleSectionListFromAddr(IntPtr addr, ref Bridge.ListInfo listInfo);
 
         public static ModuleSectionInfo[] SectionListFromAddr(IntPtr addr)
@@ -57,15 +52,9 @@ namespace DotNetPlugin.Script
             var listInfo = new Bridge.ListInfo();
             return listInfo.ToArray<ModuleSectionInfo>(ScriptModuleSectionListFromAddr(addr, ref listInfo));
         }
-
-#if AMD64
-        [DllImport("x64dbg.dll", CallingConvention = CallingConvention.Cdecl,
+        
+        [DllImport(dll, CallingConvention = cdecl,
              EntryPoint = "?InfoFromAddr@Module@Script@@YA_N_KPEAUModuleInfo@12@@Z")]
-#else
-        [DllImport("x32dbg.dll", CallingConvention = CallingConvention.Cdecl,
-             EntryPoint = "?InfoFromAddr@Module@Script@@YA_NKPAUModuleInfo@12@@Z")]
-#endif
-
         private static extern bool ScriptModuleInfoFromAddr(IntPtr addr, ref ModuleInfo info);
 
         public static bool InfoFromAddr(IntPtr addr, ref ModuleInfo info)
