@@ -4,7 +4,7 @@ using RGiesecke.DllExport;
 
 namespace DotNetPlugin
 {
-    public static class MainPlugin
+    public static class PluginMain
     {
         private const string plugin_name = "DotNetPlugin";
         private const int plugin_version = 1;
@@ -16,20 +16,20 @@ namespace DotNetPlugin
             initStruct.sdkVersion = Plugins.PLUG_SDKVERSION;
             initStruct.pluginVersion = plugin_version;
             initStruct.pluginName = plugin_name;
-            return FunctionCode.PlugIn_Init(initStruct);
+            return DotNetPluginCS.PluginInit(initStruct);
         }
 
         [DllExport("plugstop", CallingConvention.Cdecl)]
         private static bool plugstop()
         {
-            FunctionCode.PlugIn_Stop();
+            DotNetPluginCS.PluginStop();
             return true;
         }
 
         [DllExport("plugsetup", CallingConvention.Cdecl)]
         private static void plugsetup(ref Plugins.PLUG_SETUPSTRUCT setupStruct)
         {
-            FunctionCode.PlugIn_SetUp(setupStruct);
+            DotNetPluginCS.PluginSetup(setupStruct);
         }
     }
 }

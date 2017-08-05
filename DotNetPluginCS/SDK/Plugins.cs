@@ -23,7 +23,7 @@ namespace DotNetPlugin.SDK
         private const string dll = "x32dbg.dll";
 #endif
         private const CallingConvention cdecl = CallingConvention.Cdecl;
- 
+
         [DllImport(dll, CallingConvention = cdecl)]
         public static extern void _plugin_logprintf(string format);
 

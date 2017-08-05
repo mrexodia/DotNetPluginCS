@@ -32,7 +32,7 @@ namespace DotNetPlugin.Script
         private const string dll = "x32dbg.dll";
 #endif
         private const CallingConvention cdecl = CallingConvention.Cdecl;
-        
+
         [DllImport(dll, CallingConvention = cdecl,
              EntryPoint = "?GetList@Module@Script@@YA_NPEAUListInfo@@@Z")]
         private static extern bool ScriptModuleGetList(ref Bridge.ListInfo listInfo);
@@ -42,7 +42,7 @@ namespace DotNetPlugin.Script
             var listInfo = new Bridge.ListInfo();
             return listInfo.ToArray<ModuleInfo>(ScriptModuleGetList(ref listInfo));
         }
-        
+
         [DllImport(dll, CallingConvention = cdecl,
              EntryPoint = "?SectionListFromAddr@Module@Script@@YA_N_KPEAUListInfo@@@Z")]
         private static extern bool ScriptModuleSectionListFromAddr(IntPtr addr, ref Bridge.ListInfo listInfo);
@@ -52,7 +52,7 @@ namespace DotNetPlugin.Script
             var listInfo = new Bridge.ListInfo();
             return listInfo.ToArray<ModuleSectionInfo>(ScriptModuleSectionListFromAddr(addr, ref listInfo));
         }
-        
+
         [DllImport(dll, CallingConvention = cdecl,
              EntryPoint = "?InfoFromAddr@Module@Script@@YA_N_KPEAUModuleInfo@12@@Z")]
         private static extern bool ScriptModuleInfoFromAddr(IntPtr addr, ref ModuleInfo info);

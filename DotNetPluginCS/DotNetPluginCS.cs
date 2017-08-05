@@ -5,13 +5,13 @@ using RGiesecke.DllExport;
 
 namespace DotNetPlugin
 {
-    public class FunctionCode
+    public class DotNetPluginCS
     {
         private const int MENU_ABOUT = 0;
         private const int MENU_DUMP = 1;
         private const int MENU_TEST = 2;
 
-        public static bool PlugIn_Init(Plugins.PLUG_INITSTRUCT initStruct)
+        public static bool PluginInit(Plugins.PLUG_INITSTRUCT initStruct)
         {
             PLog.WriteLine("[DotNet TEST] pluginHandle: {0}", Plugins.pluginHandle);
             if (!Plugins._plugin_registercommand(Plugins.pluginHandle, "DotNetpluginTestCommand", RegisteredCommands.cbNetTestCommand, false))
@@ -23,13 +23,13 @@ namespace DotNetPlugin
             return true;
         }
 
-        public static void PlugIn_Stop()
+        public static void PluginStop()
         {
             Plugins._plugin_unregistercallback(Plugins.pluginHandle, Plugins.CBTYPE.CB_INITDEBUG);
             Plugins._plugin_unregistercallback(Plugins.pluginHandle, Plugins.CBTYPE.CB_STOPDEBUG);
         }
 
-        public static void PlugIn_SetUp(Plugins.PLUG_SETUPSTRUCT setupStruct)
+        public static void PluginSetup(Plugins.PLUG_SETUPSTRUCT setupStruct)
         {
             Plugins._plugin_menuaddentry(setupStruct.hMenu, 0, "&About...");
             Plugins._plugin_menuaddentry(setupStruct.hMenu, 1, "&DotNetDumpProcess");

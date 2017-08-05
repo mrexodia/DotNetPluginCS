@@ -33,7 +33,7 @@ namespace DotNetPlugin.SDK
         private const string dll = "x32bridge.dll";
 #endif
         private const CallingConvention cdecl = CallingConvention.Cdecl;
-        
+
         [DllImport(dll, CallingConvention = cdecl)]
         public static extern bool GuiGetLineWindow(string title, ref IntPtr text);
 

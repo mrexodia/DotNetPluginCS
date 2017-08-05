@@ -58,9 +58,9 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FunctionCode.cs" />
+    <Compile Include="DotNetPluginCS.cs" />
     <Compile Include="RegisteredCommands.cs" />
-    <Compile Include="MainPlugin.cs" />
+    <Compile Include="PluginMain.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="SDK\WAPI.cs" />
     <Compile Include="SDK\Bridge.cs" />
