@@ -1,8 +1,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetPluginCS", "DotNetPluginCS\DotNetPluginCS.csproj", "{F2F8BA6A-0112-47CA-9AFA-E8082263AB72}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Managed.x64dbg", "Managed.x64dbg\Managed.x64dbg.csproj", "{3F05E028-6436-4F1C-ABAF-5E7CFBFCB7D7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,8 +22,19 @@ Global
 		{F2F8BA6A-0112-47CA-9AFA-E8082263AB72}.Release|x64.Build.0 = Release|x64
 		{F2F8BA6A-0112-47CA-9AFA-E8082263AB72}.Release|x86.ActiveCfg = Release|x86
 		{F2F8BA6A-0112-47CA-9AFA-E8082263AB72}.Release|x86.Build.0 = Release|x86
+		{3F05E028-6436-4F1C-ABAF-5E7CFBFCB7D7}.Debug|x64.ActiveCfg = Debug|x64
+		{3F05E028-6436-4F1C-ABAF-5E7CFBFCB7D7}.Debug|x64.Build.0 = Debug|x64
+		{3F05E028-6436-4F1C-ABAF-5E7CFBFCB7D7}.Debug|x86.ActiveCfg = Debug|x86
+		{3F05E028-6436-4F1C-ABAF-5E7CFBFCB7D7}.Debug|x86.Build.0 = Debug|x86
+		{3F05E028-6436-4F1C-ABAF-5E7CFBFCB7D7}.Release|x64.ActiveCfg = Release|x64
+		{3F05E028-6436-4F1C-ABAF-5E7CFBFCB7D7}.Release|x64.Build.0 = Release|x64
+		{3F05E028-6436-4F1C-ABAF-5E7CFBFCB7D7}.Release|x86.ActiveCfg = Release|x86
+		{3F05E028-6436-4F1C-ABAF-5E7CFBFCB7D7}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {04FC09BA-059D-44FA-A886-0B8E3C34B00F}
 	EndGlobalSection
 EndGlobal

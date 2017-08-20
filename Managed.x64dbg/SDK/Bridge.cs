@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace DotNetPlugin.SDK
+namespace Managed.x64dbg.SDK
 {
     public class Bridge
     {

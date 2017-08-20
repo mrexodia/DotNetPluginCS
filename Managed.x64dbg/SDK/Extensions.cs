@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace DotNetPlugin.SDK
+namespace Managed.x64dbg.SDK
 {
     public static class Extensions
     {

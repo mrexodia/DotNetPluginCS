@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using DotNetPlugin.SDK;
+using Managed.x64dbg.SDK;
 
-namespace DotNetPlugin.Script
+namespace Managed.x64dbg.Script
 {
     public static class Module
     {

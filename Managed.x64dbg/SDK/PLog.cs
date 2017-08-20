@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace DotNetPlugin.SDK
+namespace Managed.x64dbg.SDK
 {
     public static class PLog
     {

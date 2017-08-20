@@ -1,5 +1,5 @@
 ﻿using System.Runtime.InteropServices;
-using DotNetPlugin.SDK;
+using Managed.x64dbg.SDK;
 using Microsoft.VisualBasic;
 using RGiesecke.DllExport;
 

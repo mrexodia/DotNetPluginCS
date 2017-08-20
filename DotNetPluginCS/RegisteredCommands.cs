@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Windows.Forms;
-using DotNetPlugin.Script;
-using DotNetPlugin.SDK;
+using Managed.x64dbg.Script;
+using Managed.x64dbg.SDK;
 using Microsoft.VisualBasic;
 using Microsoft.VisualBasic.CompilerServices;
 

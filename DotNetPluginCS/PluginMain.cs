@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using DotNetPlugin.SDK;
+using Managed.x64dbg.SDK;
 using RGiesecke.DllExport;
 
 namespace DotNetPlugin
