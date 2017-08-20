@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 using DotNetPlugin.SDK;
 using RGiesecke.DllExport;
 
@@ -16,6 +17,7 @@ namespace DotNetPlugin
             initStruct.sdkVersion = Plugins.PLUG_SDKVERSION;
             initStruct.pluginVersion = plugin_version;
             initStruct.pluginName = plugin_name;
+            Console.SetOut(new TextWriterPLog());
             return DotNetPluginCS.PluginInit(initStruct);
         }
 

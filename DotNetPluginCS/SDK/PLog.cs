@@ -19,4 +19,14 @@ namespace DotNetPlugin.SDK
             Plugins._plugin_logprintf(string.Format(format.Replace("%", "%%"), args));
         }
     }
+
+    public class TextWriterPLog : TextWriter
+    {
+        public override Encoding Encoding { get { return Encoding.UTF8; } }
+
+        public override void Write(string value)
+        {
+            PLog.Write(value);
+        }
+    }
 }
