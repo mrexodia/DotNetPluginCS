@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 using Managed.x64dbg.SDK;
 using Microsoft.VisualBasic;
 using RGiesecke.DllExport;
@@ -13,14 +14,14 @@ namespace DotNetPlugin
 
         public static bool PluginInit(Plugins.PLUG_INITSTRUCT initStruct)
         {
-            PLog.WriteLine("[DotNet TEST] pluginHandle: {0}", Plugins.pluginHandle);
+            Console.WriteLine("[DotNet TEST] pluginHandle: {0}", Plugins.pluginHandle);
 
             if (!Plugins._plugin_registercommand(Plugins.pluginHandle, "DotNetpluginTestCommand", RegisteredCommands.cbNetTestCommand, false))
-                PLog.WriteLine("[DotNet TEST] error registering the \"DotNetpluginTestCommand\" command!");
+                Console.WriteLine("[DotNet TEST] error registering the \"DotNetpluginTestCommand\" command!");
             if (!Plugins._plugin_registercommand(Plugins.pluginHandle, "DotNetDumpProcess", RegisteredCommands.cbDumpProcessCommand, true))
-                PLog.WriteLine("[DotNet TEST] error registering the \"DotNetDumpProcess\" command!");
+                Console.WriteLine("[DotNet TEST] error registering the \"DotNetDumpProcess\" command!");
             if (!Plugins._plugin_registercommand(Plugins.pluginHandle, "DotNetModuleEnum", RegisteredCommands.cbModuleEnum, true))
-                PLog.WriteLine("[DotNet TEST] error registering the \"DotNetModuleEnum\" command!");
+                Console.WriteLine("[DotNet TEST] error registering the \"DotNetModuleEnum\" command!");
 
             Plugins._plugin_registercallback(Plugins.pluginHandle, Plugins.CBTYPE.CB_INITDEBUG, (cbType, info) => CBINITDEBUG(cbType, in info.ToStructUnsafe<Plugins.PLUG_CB_INITDEBUG>()));
             Plugins._plugin_registercallback(Plugins.pluginHandle, Plugins.CBTYPE.CB_STOPDEBUG, (cbType, info) => CBSTOPDEBUG(cbType, in info.ToStructUnsafe<Plugins.PLUG_CB_STOPDEBUG>()));
@@ -46,13 +47,13 @@ namespace DotNetPlugin
         public static void CBINITDEBUG(Plugins.CBTYPE cbType, in Plugins.PLUG_CB_INITDEBUG info)
         {
             var szFileName = info.szFileName;
-            PLog.WriteLine("[DotNet TEST] DotNet test debugging of file {0} started!", szFileName);
+            Console.WriteLine("[DotNet TEST] DotNet test debugging of file {0} started!", szFileName);
         }
 
         //[DllExport("CBSTOPDEBUG", CallingConvention.Cdecl)]
         public static void CBSTOPDEBUG(Plugins.CBTYPE cbType, in Plugins.PLUG_CB_STOPDEBUG info)
         {
-            PLog.WriteLine("[DotNet TEST] DotNet test debugging stopped!");
+            Console.WriteLine("[DotNet TEST] DotNet test debugging stopped!");
         }
 
         [DllExport("CBCREATEPROCESS", CallingConvention.Cdecl)]
@@ -62,7 +63,7 @@ namespace DotNetPlugin
             var modInfo = info.modInfo;
             var DebugFileName = info.DebugFileName;
             var fdProcessInfo = info.fdProcessInfo;
-            PLog.WriteLine("[DotNet TEST] Create process {0}", info.DebugFileName);
+            Console.WriteLine("[DotNet TEST] Create process {0}", info.DebugFileName);
         }
 
         [DllExport("CBLOADDLL", CallingConvention.Cdecl)]
@@ -84,7 +85,7 @@ namespace DotNetPlugin
                 case MENU_DUMP:
                     if (!Bridge.DbgIsDebugging())
                     {
-                        PLog.WriteLine("You need to be debugging to use this Command");
+                        Console.WriteLine("You need to be debugging to use this Command");
                         break;
                     }
                     Bridge.DbgCmdExec("DotNetDumpProcess");

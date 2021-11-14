@@ -19,7 +19,7 @@ namespace DotNetPlugin
             initStruct.sdkVersion = Plugins.PLUG_SDKVERSION;
             initStruct.pluginVersion = plugin_version;
             initStruct.pluginName = plugin_name;
-            Console.SetOut(new TextWriterPLog());
+            Console.SetOut(PLogTextWriter.Default);
             return DotNetPluginCS.PluginInit(initStruct);
         }
 

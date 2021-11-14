@@ -17,7 +17,7 @@ namespace DotNetPlugin
 
             var errorMessage = e.ExceptionObject.ToString();
             File.AppendAllText(logPath, errorMessage);
-            PLog.WriteLine(errorMessage);
+            PLogTextWriter.Default.WriteLine(errorMessage);
         }
 
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
