@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Managed.x64dbg.SDK
 {
+    // https://github.com/x64dbg/TitanEngine/blob/x64dbg/SDK/C/TitanEngine.h
     public class TitanEngine
     {
         public const int UE_STRUCT_PE32STRUCT = 1;
@@ -211,15 +212,15 @@ namespace Managed.x64dbg.SDK
         public const int UE_CSP = 36;
 
         [DllImport("TitanEngine.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr GetContextData(uint IndexOfRegister);
+        public static extern UIntPtr GetContextData(uint IndexOfRegister);
 
         [DllImport("TitanEngine.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr TitanGetProcessInformation();
 
-        [DllImport("TitanEngine.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern bool DumpProcess(IntPtr hProcess, IntPtr ImageBase, string szDumpFileName, IntPtr EntryPoint);
+        [DllImport("TitanEngine.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public static extern bool DumpProcess(IntPtr hProcess, IntPtr ImageBase, string szDumpFileName, UIntPtr EntryPoint);
 
-        [DllImport("TitanEngine.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern bool StaticFileLoadW(string szFileName, uint DesiredAccess, bool SimulateLoad, IntPtr FileHandle, ref uint LoadedSize, IntPtr FileMap, IntPtr FileMapVA);
+        [DllImport("TitanEngine.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        public static extern bool StaticFileLoad(string szFileName, uint DesiredAccess, bool SimulateLoad, IntPtr FileHandle, ref uint LoadedSize, IntPtr FileMap, IntPtr FileMapVA);
     }
 }

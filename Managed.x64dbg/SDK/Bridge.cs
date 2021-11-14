@@ -4,9 +4,11 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Managed.x64dbg.SDK
 {
+    // https://github.com/x64dbg/x64dbg/blob/development/src/bridge/bridgemain.h
     public class Bridge
     {
         public const int GUI_MAX_LINE_SIZE = 65536;
@@ -34,52 +36,74 @@ namespace Managed.x64dbg.SDK
 #endif
         private const CallingConvention cdecl = CallingConvention.Cdecl;
 
-        [DllImport(dll, CallingConvention = cdecl)]
-        public static extern bool GuiGetLineWindow(string title, ref IntPtr text);
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        private static extern bool GuiGetLineWindow([MarshalAs(UnmanagedType.LPUTF8Str)] string title, IntPtr text);
 
-        [DllImport(dll, CallingConvention = cdecl)]
-        public static extern IntPtr DbgValFromString(string Sstring);
+        public static unsafe bool GuiGetLineWindow([MarshalAs(UnmanagedType.LPUTF8Str)] string title, out string text)
+        {
+            // alternatively we could implement a custom marshaler (ICustomMarshaler) but that wont't work for ref/out parameters for some reason...
+            var textBuffer = Marshal.AllocHGlobal(GUI_MAX_LINE_SIZE);
+            try
+            {
+                var success = GuiGetLineWindow(title, textBuffer);
+                text = success ? textBuffer.MarshalToStringUTF8(GUI_MAX_LINE_SIZE) : default;
+                return success;
+            }
+            finally { Marshal.FreeHGlobal(textBuffer); }
+        }
 
-        [DllImport(dll, CallingConvention = cdecl)]
-        public static extern bool DbgGetModuleAt(IntPtr addr, IntPtr text);
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern nuint DbgValFromString([MarshalAs(UnmanagedType.LPUTF8Str)] string @string);
 
-        [DllImport(dll, CallingConvention = cdecl)]
-        public static extern IntPtr DbgModBaseFromName(string name);
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        private static extern bool DbgGetModuleAt(nuint addr, IntPtr text);
 
-        [DllImport(dll, CallingConvention = cdecl)]
+        public static unsafe bool DbgGetModuleAt(nuint addr, out string text)
+        {
+            var textBufferPtr = stackalloc byte[MAX_MODULE_SIZE];
+            var success = DbgGetModuleAt(addr, new IntPtr(textBufferPtr));
+            text = success ? new IntPtr(textBufferPtr).MarshalToStringUTF8(MAX_MODULE_SIZE) : default;
+            return success;
+        }
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern nuint DbgModBaseFromName([MarshalAs(UnmanagedType.LPUTF8Str)] string name);
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
         public static extern bool DbgIsDebugging();
 
-        [DllImport(dll, CallingConvention = cdecl)]
-        public static extern bool DbgCmdExec(string cmd);
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern bool DbgCmdExec([MarshalAs(UnmanagedType.LPUTF8Str)] string cmd);
 
-        [DllImport(dll, CallingConvention = cdecl, CharSet = CharSet.Ansi)]
-        public static extern bool DbgCmdExecDirect(string cmd);
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern bool DbgCmdExecDirect([MarshalAs(UnmanagedType.LPUTF8Str)] string cmd);
 
-        [DllImport(dll, CallingConvention = cdecl)]
-        public static extern bool BridgeAlloc(IntPtr size);
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern IntPtr BridgeAlloc(nuint size);
 
-        [DllImport(dll, CallingConvention = cdecl)]
-        public static extern bool BridgeFree(IntPtr size);
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern void BridgeFree(IntPtr ptr);
 
         public struct ICONDATA
         {
             public IntPtr data;
-            public long size;
+            public nuint size;
         }
 
+        // https://github.com/x64dbg/x64dbg/blob/development/src/bridge/bridgelist.h
         public struct ListInfo
         {
             public int count;
-            public IntPtr size;
+            public nuint size;
             public IntPtr data;
 
             public T[] ToArray<T>(bool success) where T : new()
             {
-                if (!success || count == 0 || size == IntPtr.Zero)
-                    return new T[0];
+                if (!success || count == 0 || size == 0)
+                    return Array.Empty<T>();
                 var list = new T[count];
                 var szt = Marshal.SizeOf(typeof(T));
-                var sz = size.ToInt32() / count;
+                var sz = checked((int)(size / (nuint)count));
                 if (szt != sz)
                     throw new InvalidDataException(string.Format("{0} type size mismatch, expected {1} got {2}!",
                         typeof(T).Name, szt, sz));

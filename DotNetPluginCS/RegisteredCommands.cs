@@ -47,7 +47,7 @@ namespace DotNetPlugin
             if (result == DialogResult.OK)
             {
                 string fileName = saveFileDialog.FileName;
-                if (!TitanEngine.DumpProcess(hProcess, modinfo.@base, fileName, addr))
+                if (!TitanEngine.DumpProcess((nint)hProcess, (nint)modinfo.@base, fileName, addr))
                 {
                     PLog.WriteLine("[DotNet TEST] DumpProcess failed...");
                     return false;

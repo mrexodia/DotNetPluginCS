@@ -14,12 +14,16 @@ namespace DotNetPlugin
         public static bool PluginInit(Plugins.PLUG_INITSTRUCT initStruct)
         {
             PLog.WriteLine("[DotNet TEST] pluginHandle: {0}", Plugins.pluginHandle);
+
             if (!Plugins._plugin_registercommand(Plugins.pluginHandle, "DotNetpluginTestCommand", RegisteredCommands.cbNetTestCommand, false))
                 PLog.WriteLine("[DotNet TEST] error registering the \"DotNetpluginTestCommand\" command!");
             if (!Plugins._plugin_registercommand(Plugins.pluginHandle, "DotNetDumpProcess", RegisteredCommands.cbDumpProcessCommand, true))
                 PLog.WriteLine("[DotNet TEST] error registering the \"DotNetDumpProcess\" command!");
             if (!Plugins._plugin_registercommand(Plugins.pluginHandle, "DotNetModuleEnum", RegisteredCommands.cbModuleEnum, true))
                 PLog.WriteLine("[DotNet TEST] error registering the \"DotNetModuleEnum\" command!");
+
+            Plugins._plugin_registercallback(Plugins.pluginHandle, Plugins.CBTYPE.CB_INITDEBUG, (cbType, info) => CBINITDEBUG(cbType, in info.ToStructUnsafe<Plugins.PLUG_CB_INITDEBUG>()));
+            Plugins._plugin_registercallback(Plugins.pluginHandle, Plugins.CBTYPE.CB_STOPDEBUG, (cbType, info) => CBSTOPDEBUG(cbType, in info.ToStructUnsafe<Plugins.PLUG_CB_STOPDEBUG>()));
             return true;
         }
 
@@ -38,39 +42,39 @@ namespace DotNetPlugin
             Plugins._plugin_menuaddentry(hSubMenu, 3, "sub menu entry");
         }
 
-        [DllExport("CBINITDEBUG", CallingConvention.Cdecl)]
-        public static void CBINITDEBUG(Plugins.CBTYPE cbType, ref Plugins.PLUG_CB_INITDEBUG info)
+        //[DllExport("CBINITDEBUG", CallingConvention.Cdecl)]
+        public static void CBINITDEBUG(Plugins.CBTYPE cbType, in Plugins.PLUG_CB_INITDEBUG info)
         {
-            var szFileName = info.szFileName.MarshalToString();
+            var szFileName = info.szFileName;
             PLog.WriteLine("[DotNet TEST] DotNet test debugging of file {0} started!", szFileName);
         }
 
-        [DllExport("CBSTOPDEBUG", CallingConvention.Cdecl)]
-        public static void CBSTOPDEBUG(Plugins.CBTYPE cbType, ref Plugins.PLUG_CB_STOPDEBUG info)
+        //[DllExport("CBSTOPDEBUG", CallingConvention.Cdecl)]
+        public static void CBSTOPDEBUG(Plugins.CBTYPE cbType, in Plugins.PLUG_CB_STOPDEBUG info)
         {
             PLog.WriteLine("[DotNet TEST] DotNet test debugging stopped!");
         }
 
         [DllExport("CBCREATEPROCESS", CallingConvention.Cdecl)]
-        public static void CBCREATEPROCESS(Plugins.CBTYPE cbType, ref Plugins.PLUG_CB_CREATEPROCESS info)
+        public static void CBCREATEPROCESS(Plugins.CBTYPE cbType, in Plugins.PLUG_CB_CREATEPROCESS info)
         {
-            var CreateProcessInfo = info.CreateProcessInfo.ToStruct<WAPI.CREATE_PROCESS_DEBUG_INFO>();
-            var modInfo = info.modInfo.ToStruct<WAPI.IMAGEHLP_MODULE64>();
-            var DebugFileName = info.DebugFileName.MarshalToString();
-            var fdProcessInfo = info.fdProcessInfo.ToStruct<WAPI.PROCESS_INFORMATION>();
-            PLog.WriteLine("[DotNet TEST] Create process {0}", info.DebugFileName.MarshalToString());
+            var CreateProcessInfo = info.CreateProcessInfo;
+            var modInfo = info.modInfo;
+            var DebugFileName = info.DebugFileName;
+            var fdProcessInfo = info.fdProcessInfo;
+            PLog.WriteLine("[DotNet TEST] Create process {0}", info.DebugFileName);
         }
 
         [DllExport("CBLOADDLL", CallingConvention.Cdecl)]
-        public static void CBLOADDLL(Plugins.CBTYPE cbType, ref Plugins.PLUG_CB_LOADDLL info)
+        public static void CBLOADDLL(Plugins.CBTYPE cbType, in Plugins.PLUG_CB_LOADDLL info)
         {
-            var LoadDll = info.LoadDll.ToStruct<WAPI.LOAD_DLL_DEBUG_INFO>();
-            var modInfo = info.modInfo.ToStruct<WAPI.IMAGEHLP_MODULE64>();
-            var modname = info.modname.MarshalToString();
+            var LoadDll = info.LoadDll;
+            var modInfo = info.modInfo;
+            var modname = info.modname;
         }
 
         [DllExport("CBMENUENTRY", CallingConvention.Cdecl)]
-        public static void CBMENUENTRY(Plugins.CBTYPE cbType, ref Plugins.PLUG_CB_MENUENTRY info)
+        public static void CBMENUENTRY(Plugins.CBTYPE cbType, in Plugins.PLUG_CB_MENUENTRY info)
         {
             switch (info.hEntry)
             {

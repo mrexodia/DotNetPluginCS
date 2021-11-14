@@ -2,6 +2,7 @@
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Managed.x64dbg.SDK;
 
 namespace DotNetPlugin
 {
@@ -9,12 +10,14 @@ namespace DotNetPlugin
     // https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-9.0/module-initializers
     public class PluginModule
     {
-        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        public static void LogUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var location = typeof(PluginMain).Assembly.Location;
             var logPath = Path.ChangeExtension(location, ".log");
 
-            File.AppendAllText(logPath, e.ExceptionObject.ToString());
+            var errorMessage = e.ExceptionObject.ToString();
+            File.AppendAllText(logPath, errorMessage);
+            PLog.WriteLine(errorMessage);
         }
 
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
@@ -34,7 +37,7 @@ namespace DotNetPlugin
         [ModuleInitializer]
         public static void Initialize()
         {
-            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            AppDomain.CurrentDomain.UnhandledException += LogUnhandledException;
 
             // makes sure that dependencies are resolved from the directory in which the main plugin dll resides
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;

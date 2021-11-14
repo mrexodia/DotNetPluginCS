@@ -11,12 +11,12 @@ namespace Managed.x64dbg.SDK
     {
         public static void WriteLine(string format, params object[] args)
         {
-            Write(string.Format(format.Replace("%", "%%") + "\n", args));
+            Write(string.Format(format + "\n", args));
         }
 
         public static void Write(string format, params object[] args)
         {
-            Plugins._plugin_logprintf(string.Format(format.Replace("%", "%%"), args));
+            Plugins._plugin_logprint(string.Format(format, args));
         }
     }
 
