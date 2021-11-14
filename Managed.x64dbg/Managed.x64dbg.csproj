@@ -6,6 +6,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
+    <LangVersion>9</LangVersion>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Platform)'=='x86'">
