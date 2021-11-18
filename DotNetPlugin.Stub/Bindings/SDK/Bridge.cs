@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
+using DotNetPlugin.Bindings.SDK;
 
-namespace Managed.x64dbg.SDK
+namespace DotNetPlugin.Bindings
 {
     // https://github.com/x64dbg/x64dbg/blob/development/src/bridge/bridgemain.h
     public class Bridge
@@ -84,6 +81,7 @@ namespace Managed.x64dbg.SDK
         [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
         public static extern void BridgeFree(IntPtr ptr);
 
+        [Serializable]
         public struct ICONDATA
         {
             public IntPtr data;
@@ -91,6 +89,7 @@ namespace Managed.x64dbg.SDK
         }
 
         // https://github.com/x64dbg/x64dbg/blob/development/src/bridge/bridgelist.h
+        [Serializable]
         public struct ListInfo
         {
             public int count;

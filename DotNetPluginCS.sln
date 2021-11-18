@@ -2,9 +2,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31829.152
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetPluginCS", "DotNetPluginCS\DotNetPluginCS.csproj", "{F2F8BA6A-0112-47CA-9AFA-E8082263AB72}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetPlugin.Stub", "DotNetPlugin.Stub\DotNetPlugin.Stub.csproj", "{F2F8BA6A-0112-47CA-9AFA-E8082263AB72}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Managed.x64dbg", "Managed.x64dbg\Managed.x64dbg.csproj", "{3F05E028-6436-4F1C-ABAF-5E7CFBFCB7D7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetPlugin.Impl", "DotNetPlugin.Impl\DotNetPlugin.Impl.csproj", "{3F05E028-6436-4F1C-ABAF-5E7CFBFCB7D7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetPlugin.RemotingHelper", "DotNetPlugin.RemotingHelper\DotNetPlugin.RemotingHelper.csproj", "{CF3CB686-DD3D-4782-9192-8195A968DC09}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Global", "Global", "{93EAEA47-7B3E-4F65-9D11-A2C8F00071DD}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,6 +37,14 @@ Global
 		{3F05E028-6436-4F1C-ABAF-5E7CFBFCB7D7}.Release|x64.Build.0 = Release|x64
 		{3F05E028-6436-4F1C-ABAF-5E7CFBFCB7D7}.Release|x86.ActiveCfg = Release|x86
 		{3F05E028-6436-4F1C-ABAF-5E7CFBFCB7D7}.Release|x86.Build.0 = Release|x86
+		{CF3CB686-DD3D-4782-9192-8195A968DC09}.Debug|x64.ActiveCfg = Debug|x64
+		{CF3CB686-DD3D-4782-9192-8195A968DC09}.Debug|x64.Build.0 = Debug|x64
+		{CF3CB686-DD3D-4782-9192-8195A968DC09}.Debug|x86.ActiveCfg = Debug|x86
+		{CF3CB686-DD3D-4782-9192-8195A968DC09}.Debug|x86.Build.0 = Debug|x86
+		{CF3CB686-DD3D-4782-9192-8195A968DC09}.Release|x64.ActiveCfg = Release|x64
+		{CF3CB686-DD3D-4782-9192-8195A968DC09}.Release|x64.Build.0 = Release|x64
+		{CF3CB686-DD3D-4782-9192-8195A968DC09}.Release|x86.ActiveCfg = Release|x86
+		{CF3CB686-DD3D-4782-9192-8195A968DC09}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
