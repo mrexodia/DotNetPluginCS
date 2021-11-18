@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using Managed.x64dbg.SDK;
+using DotNetPlugin.Bindings.SDK;
 
-namespace Managed.x64dbg.Script
+namespace DotNetPlugin.Bindings.Script
 {
     // https://github.com/x64dbg/x64dbg/blob/development/src/dbg/_scriptapi_module.h
     public static class Module
     {
+        [Serializable]
         public unsafe struct ModuleInfo
         {
             public nuint @base;
@@ -24,17 +25,18 @@ namespace Managed.x64dbg.Script
                 }
             }
 
-            private fixed byte pathBytes[WAPI.MAX_PATH];
+            private fixed byte pathBytes[Win32.MAX_PATH];
             public string path
             {
                 get
                 {
                     fixed (byte* ptr = pathBytes)
-                        return new IntPtr(ptr).MarshalToStringUTF8(WAPI.MAX_PATH);
+                        return new IntPtr(ptr).MarshalToStringUTF8(Win32.MAX_PATH);
                 }
             }
         }
 
+        [Serializable]
         public unsafe struct ModuleSectionInfo
         {
             public nuint addr;

@@ -1,0 +1,8 @@
+﻿<Project>
+  <PropertyGroup>
+    <LangVersion>9</LangVersion>
+    <PluginAssemblyName>DotNetPlugin</PluginAssemblyName>
+    <PluginRootNamespace>DotNetPlugin</PluginRootNamespace>
+    <PluginName>x64dbg-DotNetPlugin</PluginName>
+  </PropertyGroup>
+</Project>

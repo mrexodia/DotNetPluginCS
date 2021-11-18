@@ -3,7 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Managed.x64dbg.SDK
+namespace DotNetPlugin.Bindings.SDK
 {
     public static class Extensions
     {

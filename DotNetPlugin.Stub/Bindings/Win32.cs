@@ -2,9 +2,9 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Managed.x64dbg.SDK
+namespace DotNetPlugin.Bindings
 {
-    public class WAPI
+    public class Win32
     {
         public const int MAX_PATH = 260;
 
@@ -14,6 +14,7 @@ namespace Managed.x64dbg.SDK
         [DllImport("kernel32.dll", EntryPoint = "RtlZeroMemory", ExactSpelling = true)]
         public static extern void ZeroMemory(IntPtr dst, nuint length);
 
+        [Serializable]
         public struct LOAD_DLL_DEBUG_INFO
         {
             public IntPtr hFile;
@@ -26,6 +27,7 @@ namespace Managed.x64dbg.SDK
 
         public delegate uint PTHREAD_START_ROUTINE(IntPtr lpThreadParameter);
 
+        [Serializable]
         public struct CREATE_PROCESS_DEBUG_INFO
         {
             public IntPtr hFile;
@@ -40,11 +42,13 @@ namespace Managed.x64dbg.SDK
             public ushort fUnicode;
         }
 
+        [Serializable]
         public struct EXIT_PROCESS_DEBUG_INFO
         {
             public uint dwExitCode;
         }
 
+        [Serializable]
         public struct IMAGEHLP_MODULE64
         {
             public uint SizeOfStruct;
@@ -92,6 +96,7 @@ namespace Managed.x64dbg.SDK
             NumSymTypes,
         }
 
+        [Serializable]
         public struct GUID
         {
             public uint Data1;
@@ -101,6 +106,7 @@ namespace Managed.x64dbg.SDK
             public byte[] Data4;
         }
 
+        [Serializable]
         public struct PROCESS_INFORMATION
         {
             public IntPtr hProcess;

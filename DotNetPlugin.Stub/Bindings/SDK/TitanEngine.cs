@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Managed.x64dbg.SDK
+namespace DotNetPlugin.Bindings.SDK
 {
     // https://github.com/x64dbg/TitanEngine/blob/x64dbg/SDK/C/TitanEngine.h
     public class TitanEngine

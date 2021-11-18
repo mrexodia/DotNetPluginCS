@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace Managed.x64dbg.SDK
+namespace DotNetPlugin.Bindings.SDK
 {
     public sealed class PLogTextWriter : TextWriter
     {

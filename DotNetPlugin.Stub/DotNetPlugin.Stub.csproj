@@ -1,14 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyName>DotNetPlugin</AssemblyName>
-    <RootNamespace>DotNetPlugin</RootNamespace>
+    <AssemblyName>$(PluginAssemblyName)</AssemblyName>
+    <RootNamespace>$(PluginRootNamespace)</RootNamespace>
     <TargetFramework>net472</TargetFramework>
     <Platforms>x86;x64</Platforms>
+    <OutputPath>..\bin\$(Platform)\$(Configuration)\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
-    <LangVersion>9</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyTitle>$(PluginName)</AssemblyTitle>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Platform)'=='x86'">
@@ -19,7 +20,22 @@
     <DefineConstants>AMD64;$(DefineConstants)</DefineConstants>
     <CustomTargetExt>.dp64</CustomTargetExt>
   </PropertyGroup>
-  
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <AllowUnloading>true</AllowUnloading>
+  </PropertyGroup>
+
+  <Choose>
+    <When Condition="'$(AllowUnloading)'=='true'">
+      <PropertyGroup>
+        <DefineConstants>ALLOW_UNLOADING;$(DefineConstants)</DefineConstants>
+      </PropertyGroup>
+      <ItemGroup>
+        <ProjectReference Include="..\DotNetPlugin.RemotingHelper\DotNetPlugin.RemotingHelper.csproj" />
+      </ItemGroup>
+    </When>
+  </Choose>
+
   <PropertyGroup>
     <DllExportIdent>332F9911-3C74-44E1-8ADC-5A1E19FE3F7E</DllExportIdent>
     <DllExportMetaLibName>DllExport.dll</DllExportMetaLibName>
@@ -38,16 +54,7 @@
     <DllExportPreProcType>0</DllExportPreProcType>
     <DllExportPostProcType>0</DllExportPostProcType>
   </PropertyGroup>
-  
-  <ItemGroup>
-    <ProjectReference Include="..\Managed.x64dbg\Managed.x64dbg.csproj" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Reference Include="Microsoft.VisualBasic" />
-    <Reference Include="System.Windows.Forms" />
-  </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="DllExport">
       <Version>1.7.4</Version>
@@ -55,7 +62,7 @@
       <Wz>1</Wz>
     </PackageReference>
   </ItemGroup>
-  
+
   <ImportGroup Label=".NET DllExport">
     <Import Project="$(SolutionDir)packages\DllExport.1.7.4\tools\net.r_eg.DllExport.targets" Condition="Exists($([MSBuild]::Escape('$(SolutionDir)packages\DllExport.1.7.4\tools\net.r_eg.DllExport.targets')))" Label="8337224c9ad9e356" />
   </ImportGroup>
@@ -76,9 +83,9 @@
   <Target Name="DllExportRPkgDynamicImport" BeforeTargets="PostBuildEvent" DependsOnTargets="GetFrameworkPaths" Condition="'$(DllExportModImported)' != 'true' And '$(DllExportRPkgDyn)' != 'false'">
     <MSBuild BuildInParallel="true" UseResultsCache="true" Projects="$(MSBuildProjectFullPath)" Properties="DllExportRPkgDyn=true" Targets="Build" />
   </Target>
-  
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <!-- NOTE: we cannot simply override TargetExt because that breaks DllExport -->
-    <Move SourceFiles="$(TargetPath)" DestinationFiles="$(TargetDir)$(TargetName)$(CustomTargetExt)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(TargetDir)$(TargetName)$(CustomTargetExt)" />
   </Target>
 </Project>
