@@ -13,11 +13,13 @@ namespace DotNetPlugin
         [DllExport("pluginit", CallingConvention.Cdecl)]
         public static bool pluginit(ref Plugins.PLUG_INITSTRUCT initStruct)
         {
+            Plugins.UnhandledCallbackException += PluginModule.LogUnhandledException;
+
             Plugins.pluginHandle = initStruct.pluginHandle;
             initStruct.sdkVersion = Plugins.PLUG_SDKVERSION;
             initStruct.pluginVersion = plugin_version;
             initStruct.pluginName = plugin_name;
-            Console.SetOut(new TextWriterPLog());
+            Console.SetOut(PLogTextWriter.Default);
             return DotNetPluginCS.PluginInit(initStruct);
         }
 

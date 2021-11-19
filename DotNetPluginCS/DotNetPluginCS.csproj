@@ -1,102 +1,84 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F2F8BA6A-0112-47CA-9AFA-E8082263AB72}</ProjectGuid>
-    <OutputType>Library</OutputType>
     <AssemblyName>DotNetPlugin</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile />
-    <ApplicationVersion>1.0.0.0</ApplicationVersion>
-    <FileAlignment>512</FileAlignment>
     <RootNamespace>DotNetPlugin</RootNamespace>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;AMD64</DefineConstants>
+    <TargetFramework>net472</TargetFramework>
+    <Platforms>x86;x64</Platforms>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE;AMD64</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x86\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <LangVersion>9</LangVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>bin\x86\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+
+  <PropertyGroup Condition="'$(Platform)'=='x86'">
+    <DefineConstants>X86;$(DefineConstants)</DefineConstants>
+    <CustomTargetExt>.dp32</CustomTargetExt>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='x64'">
+    <DefineConstants>AMD64;$(DefineConstants)</DefineConstants>
+    <CustomTargetExt>.dp64</CustomTargetExt>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <DllExportIdent>332F9911-3C74-44E1-8ADC-5A1E19FE3F7E</DllExportIdent>
+    <DllExportMetaLibName>DllExport.dll</DllExportMetaLibName>
+    <DllExportNamespace>RGiesecke.DllExport</DllExportNamespace>
+    <DllExportDDNSCecil>true</DllExportDDNSCecil>
+    <DllExportSkipOnAnyCpu>false</DllExportSkipOnAnyCpu>
+    <DllExportPlatform>Auto</DllExportPlatform>
+    <DllExportOrdinalsBase>1</DllExportOrdinalsBase>
+    <DllExportGenExpLib>false</DllExportGenExpLib>
+    <DllExportOurILAsm>false</DllExportOurILAsm>
+    <DllExportSysObjRebase>false</DllExportSysObjRebase>
+    <DllExportLeaveIntermediateFiles>true</DllExportLeaveIntermediateFiles>
+    <DllExportTimeout>30000</DllExportTimeout>
+    <DllExportPeCheck>2</DllExportPeCheck>
+    <DllExportPatches>0</DllExportPatches>
+    <DllExportPreProcType>0</DllExportPreProcType>
+    <DllExportPostProcType>0</DllExportPostProcType>
+  </PropertyGroup>
+  
   <ItemGroup>
-    <Reference Include="Costura, Version=1.6.2.0, Culture=neutral, PublicKeyToken=9919ef960d84173d, processorArchitecture=MSIL">
-      <HintPath>..\packages\Costura.Fody.1.6.2\lib\portable-net+sl+win+wpa+wp\Costura.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
+    <ProjectReference Include="..\Managed.x64dbg\Managed.x64dbg.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <Reference Include="Microsoft.VisualBasic" />
-    <Reference Include="RGiesecke.DllExport.Metadata, Version=1.0.0.0, Culture=neutral, PublicKeyToken=8f52d83c1a22df51, processorArchitecture=MSIL">
-      <HintPath>..\packages\UnmanagedExports.1.2.7\lib\net\RGiesecke.DllExport.Metadata.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System" />
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
+  
   <ItemGroup>
-    <Compile Include="DotNetPluginCS.cs" />
-    <Compile Include="RegisteredCommands.cs" />
-    <Compile Include="PluginMain.cs" />
-    <Compile Include="AssemblyInfo.cs" />
+    <PackageReference Include="DllExport">
+      <Version>1.7.4</Version>
+      <Visible>false</Visible>
+      <Wz>1</Wz>
+    </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Managed.x64dbg\Managed.x64dbg.csproj">
-      <Project>{3f05e028-6436-4f1c-abaf-5e7cfbfcb7d7}</Project>
-      <Name>Managed.x64dbg</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="FodyWeavers.xml" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>if $(PlatformName) == x86 (
-move "$(TargetDir)$(TargetName).dll" "$(TargetDir)$(TargetName).dp32"
-) ELSE (
-move "$(TargetDir)$(TargetName).dll" "$(TargetDir)$(TargetName).dp64"
-)</PostBuildEvent>
-  </PropertyGroup>
-  <Import Project="../packages/UnmanagedExports.1.2.7/tools/RGiesecke.DllExport.targets" Condition="Exists('../packages/UnmanagedExports.1.2.7/tools/RGiesecke.DllExport.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Costura.Fody.1.6.2\build\portable-net+sl+win+wpa+wp\Costura.Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Costura.Fody.1.6.2\build\portable-net+sl+win+wpa+wp\Costura.Fody.targets'))" />
-    <Error Condition="!Exists('..\packages\Fody.2.1.2\build\portable-net+sl+win+wpa+wp\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.2.1.2\build\portable-net+sl+win+wpa+wp\Fody.targets'))" />
+  
+  <ImportGroup Label=".NET DllExport">
+    <Import Project="$(SolutionDir)packages\DllExport.1.7.4\tools\net.r_eg.DllExport.targets" Condition="Exists($([MSBuild]::Escape('$(SolutionDir)packages\DllExport.1.7.4\tools\net.r_eg.DllExport.targets')))" Label="8337224c9ad9e356" />
+  </ImportGroup>
+  <Target Name="DllExportRestorePkg" BeforeTargets="PrepareForBuild">
+    <Error Condition="!Exists('$(SolutionDir)DllExport.bat')" Text="DllExport.bat is not found. Path: '$(SolutionDir)' - https://github.com/3F/DllExport" />
+    <Exec Condition="('$(DllExportModImported)' != 'true' Or !Exists('$(SolutionDir)packages\DllExport.1.7.4\tools\net.r_eg.DllExport.targets')) And Exists('$(SolutionDir)DllExport.bat')" Command=".\DllExport.bat  -action Restore" WorkingDirectory="$(SolutionDir)" />
+    <MSBuild Condition="'$(DllExportModImported)' != 'true'" Projects="$(SolutionDir)packages\DllExport.1.7.4\tools\net.r_eg.DllExport.targets" Targets="DllExportMetaXBaseTarget" Properties="TargetFramework=$(TargetFramework)">
+      <Output TaskParameter="TargetOutputs" PropertyName="DllExportMetaXBase" />
+    </MSBuild>
+    <ItemGroup>
+      <Reference Include="DllExport, PublicKeyToken=8337224c9ad9e356">
+        <HintPath>$(SolutionDir)packages\DllExport.1.7.4\gcache\$(DllExportMetaXBase)\$(DllExportNamespace)\$(DllExportMetaLibName)</HintPath>
+        <Private>False</Private>
+        <SpecificVersion>False</SpecificVersion>
+      </Reference>
+    </ItemGroup>
   </Target>
-  <Import Project="..\packages\Costura.Fody.1.6.2\build\portable-net+sl+win+wpa+wp\Costura.Fody.targets" Condition="Exists('..\packages\Costura.Fody.1.6.2\build\portable-net+sl+win+wpa+wp\Costura.Fody.targets')" />
-  <Import Project="..\packages\Fody.2.1.2\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\packages\Fody.2.1.2\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
+  <Target Name="DllExportRPkgDynamicImport" BeforeTargets="PostBuildEvent" DependsOnTargets="GetFrameworkPaths" Condition="'$(DllExportModImported)' != 'true' And '$(DllExportRPkgDyn)' != 'false'">
+    <MSBuild BuildInParallel="true" UseResultsCache="true" Projects="$(MSBuildProjectFullPath)" Properties="DllExportRPkgDyn=true" Targets="Build" />
+  </Target>
+  
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <!-- NOTE: we cannot simply override TargetExt because that breaks DllExport -->
+    <Move SourceFiles="$(TargetPath)" DestinationFiles="$(TargetDir)$(TargetName)$(CustomTargetExt)" />
+  </Target>
 </Project>

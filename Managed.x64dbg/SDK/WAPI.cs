@@ -8,11 +8,11 @@ namespace Managed.x64dbg.SDK
     {
         public const int MAX_PATH = 260;
 
-        [DllImport("psapi.dll")]
-        public static extern uint GetModuleBaseNameA(IntPtr hProcess, IntPtr hModule, StringBuilder lpBaseName, uint nSize);
-
-        [DllImport("kernel32.dll", EntryPoint = "RtlZeroMemory")]
-        public static extern void ZeroMemory(IntPtr dst, int length);
+        [DllImport("psapi.dll", CharSet = CharSet.Auto)]
+        public static extern uint GetModuleBaseName(IntPtr hProcess, IntPtr hModule, StringBuilder lpBaseName, uint nSize);
+        
+        [DllImport("kernel32.dll", EntryPoint = "RtlZeroMemory", ExactSpelling = true)]
+        public static extern void ZeroMemory(IntPtr dst, nuint length);
 
         public struct LOAD_DLL_DEBUG_INFO
         {
@@ -97,16 +97,16 @@ namespace Managed.x64dbg.SDK
             public uint Data1;
             public ushort Data2;
             public ushort Data3;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 8)]
-            public string Data4;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
+            public byte[] Data4;
         }
 
         public struct PROCESS_INFORMATION
         {
             public IntPtr hProcess;
             public IntPtr hThread;
-            public int dwProcessId;
-            public int dwThreadId;
+            public uint dwProcessId;
+            public uint dwThreadId;
         }
     }
 }

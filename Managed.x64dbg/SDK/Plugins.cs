@@ -1,21 +1,21 @@
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace Managed.x64dbg.SDK
 {
+    // https://github.com/x64dbg/x64dbg/blob/development/src/dbg/_plugins.h
     public static class Plugins
     {
         public const int PLUG_SDKVERSION = 1;
         public static int pluginHandle;
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate bool CBPLUGINCOMMAND(
-            int argc,
-            [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.LPStr, SizeParamIndex = 0)]
-            string[] argv);
+        public static event UnhandledExceptionEventHandler UnhandledCallbackException;
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void CBPLUGIN(CBTYPE cbType, ref IntPtr callbackInfo);
+        public delegate bool CBPLUGINCOMMAND(int argc, string[] argv);
+
+        public delegate void CBPLUGIN(CBTYPE cbType, IntPtr callbackInfo);
 
 #if AMD64
         private const string dll = "x64dbg.dll";
@@ -24,40 +24,163 @@ namespace Managed.x64dbg.SDK
 #endif
         private const CallingConvention cdecl = CallingConvention.Cdecl;
 
-        [DllImport(dll, CallingConvention = cdecl)]
-        public static extern void _plugin_logprintf(string format);
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern void _plugin_logprint([MarshalAs(UnmanagedType.LPUTF8Str)] string text);
 
-        [DllImport(dll, CallingConvention = cdecl)]
-        public static extern void _plugin_logputs(string text);
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern void _plugin_logputs([MarshalAs(UnmanagedType.LPUTF8Str)] string text);
 
-        [DllImport(dll, CallingConvention = cdecl)]
-        public static extern void _plugin_registercallback(int pluginHandle, CBTYPE cbType, CBPLUGIN cbPlugin);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void CBPLUGIN_NATIVE(CBTYPE cbType, IntPtr callbackInfo);
 
-        [DllImport(dll, CallingConvention = cdecl)]
-        public static extern bool _plugin_unregistercallback(int pluginHandle, CBTYPE cbType);
+        private static CBPLUGIN_NATIVE[] _pluginCallbacks = new CBPLUGIN_NATIVE[(int)CBTYPE.CB_LAST];
 
-        [DllImport(dll, CallingConvention = cdecl)]
-        public static extern bool _plugin_menuaddentry(int hMenu, int hEntry, string title);
+        [DllImport(dll, CallingConvention = cdecl, EntryPoint = nameof(_plugin_registercallback), ExactSpelling = true)]
+        private static extern void _plugin_registercallback_native(int pluginHandle, CBTYPE cbType, CBPLUGIN_NATIVE cbPlugin);
 
-        [DllImport(dll, CallingConvention = cdecl)]
-        public static extern int _plugin_menuadd(int hMenu, string title);
+        public static void _plugin_registercallback(int pluginHandle, CBTYPE cbType, CBPLUGIN cbPlugin)
+        {
+            if (cbPlugin == null)
+                throw new ArgumentNullException(nameof(cbPlugin));
 
-        [DllImport(dll, CallingConvention = cdecl)]
+            if (cbType < 0 || _pluginCallbacks.Length <= (int)cbType)
+                throw new ArgumentOutOfRangeException(nameof(cbType));
+
+            CBPLUGIN_NATIVE delegatePtr = (cbType, callbackInfo) =>
+            {
+                try
+                {
+                    cbPlugin(cbType, callbackInfo);
+                }
+                catch (Exception ex)
+                {
+                    UnhandledCallbackException?.Invoke(null, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+                }
+            };
+
+            lock (_pluginCallbacks)
+            {
+                // The CLR protects the delegate from being GC'd only for the duration of the call, so we need to keep a reference to it until unregistration.
+                _pluginCallbacks[(int)cbType] = delegatePtr;
+
+                _plugin_registercallback_native(pluginHandle, cbType, delegatePtr);
+            }
+        }
+
+        [DllImport(dll, CallingConvention = cdecl, EntryPoint = nameof(_plugin_unregistercallback), ExactSpelling = true)]
+        private static extern bool _plugin_unregistercallback_native(int pluginHandle, CBTYPE cbType);
+
+        public static bool _plugin_unregistercallback(int pluginHandle, CBTYPE cbType)
+        {
+            if (cbType < 0 || _pluginCallbacks.Length <= (int)cbType)
+                throw new ArgumentOutOfRangeException(nameof(cbType));
+
+            lock (_pluginCallbacks)
+            {
+                var success = _plugin_unregistercallback_native(pluginHandle, cbType);
+
+                if (success)
+                    _pluginCallbacks[(int)cbType] = null;
+
+                return success;
+            }
+        }
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern bool _plugin_menuaddentry(int hMenu, int hEntry, [MarshalAs(UnmanagedType.LPUTF8Str)] string title);
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern int _plugin_menuadd(int hMenu, [MarshalAs(UnmanagedType.LPUTF8Str)] string title);
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
         public static extern bool _plugin_menuclear(int hMenu);
 
-        [DllImport(dll, CallingConvention = cdecl)]
-        public static extern bool _plugin_registercommand(int pluginHandle, string command, CBPLUGINCOMMAND cbCommand, bool debugonly);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate bool CBPLUGINCOMMAND_NATIVE(int argc, IntPtr argv);
 
-        [DllImport(dll, CallingConvention = cdecl)]
-        public static extern bool _plugin_unregistercommand(int pluginHandle, string command);
+        private static Dictionary<string, CBPLUGINCOMMAND_NATIVE> _commandCallbacks = new Dictionary<string, CBPLUGINCOMMAND_NATIVE>();
 
-        public struct PLUG_INITSTRUCT
+        [DllImport(dll, CallingConvention = cdecl, EntryPoint = nameof(_plugin_registercommand), ExactSpelling = true)]
+        private static extern bool _plugin_registercommand_native(int pluginHandle, [MarshalAs(UnmanagedType.LPUTF8Str)] string command, CBPLUGINCOMMAND_NATIVE cbCommand, bool debugonly);
+
+        public static bool _plugin_registercommand(int pluginHandle, string command, CBPLUGINCOMMAND cbCommand, bool debugonly)
+        {
+            if (command == null)
+                throw new ArgumentNullException(nameof(command));
+
+            if (cbCommand == null)
+                throw new ArgumentNullException(nameof(cbCommand));
+
+            CBPLUGINCOMMAND_NATIVE delegatePtr = (argc, argv) =>
+            {
+                try
+                {
+                    var argvArray = new string[argc];
+                    for (int i = 0, ofs = 0; i < argvArray.Length; i++, ofs += IntPtr.Size)
+                        argvArray[i] = Marshal.ReadIntPtr(argv, ofs).MarshalToStringUTF8();
+
+                    return cbCommand(argc, argvArray);
+                }
+                catch (Exception ex)
+                {
+                    UnhandledCallbackException?.Invoke(null, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+                    return false;
+                }
+            };
+
+            lock (_commandCallbacks)
+            {
+                // The CLR protects the delegate from being GC'd only for the duration of the call, so we need to keep a reference to it until unregistration.
+                var success = _plugin_registercommand_native(pluginHandle, command, delegatePtr, debugonly);
+
+                if (success)
+                    _commandCallbacks[command] = delegatePtr;
+
+                return success;
+            }
+        }
+
+        [DllImport(dll, CallingConvention = cdecl, EntryPoint = nameof(_plugin_unregistercommand), ExactSpelling = true)]
+        private static extern bool _plugin_unregistercommand_native(int pluginHandle, [MarshalAs(UnmanagedType.LPUTF8Str)] string command);
+        
+        public static bool _plugin_unregistercommand(int pluginHandle, string command)
+        {
+            if (command == null)
+                throw new ArgumentNullException(nameof(command));
+
+            lock (_commandCallbacks)
+            {
+                var success = _plugin_unregistercommand_native(pluginHandle, command);
+
+                if (success)
+                    _commandCallbacks.Remove(command);
+
+                return success;
+            }
+        }
+
+#pragma warning disable 0649
+        public unsafe struct PLUG_INITSTRUCT
         {
             public int pluginHandle;
             public int sdkVersion;
             public int pluginVersion;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
-            public string pluginName;
+
+            private const int pluginNameSize = 256;
+            public fixed byte pluginNameBytes[pluginNameSize];
+            public string pluginName
+            {
+                get
+                {
+                    fixed (byte* ptr = pluginNameBytes)
+                        return new IntPtr(ptr).MarshalToStringUTF8(pluginNameSize);
+                }
+                set
+                {
+                    fixed (byte* ptr = pluginNameBytes)
+                        value.MarshalToPtrUTF8(new IntPtr(ptr), pluginNameSize);
+                }
+            }
         }
 
         public struct PLUG_SETUPSTRUCT
@@ -95,12 +218,21 @@ namespace Managed.x64dbg.SDK
             CB_LOADDB, //PLUG_CB_LOADSAVEDB
             CB_SAVEDB, //PLUG_CB_LOADSAVEDB
             CB_FILTERSYMBOL, //PLUG_CB_FILTERSYMBOL
+            CB_TRACEEXECUTE, //PLUG_CB_TRACEEXECUTE
+            CB_SELCHANGED, //PLUG_CB_SELCHANGED
+            CB_ANALYZE, //PLUG_CB_ANALYZE
+            CB_ADDRINFO, //PLUG_CB_ADDRINFO
+            CB_VALFROMSTRING, //PLUG_CB_VALFROMSTRING
+            CB_VALTOSTRING, //PLUG_CB_VALTOSTRING
+            CB_MENUPREPARE, //PLUG_CB_MENUPREPARE
+            CB_STOPPINGDEBUG, //PLUG_CB_STOPDEBUG
             CB_LAST
         }
 
         public struct PLUG_CB_INITDEBUG
         {
-            public IntPtr szFileName; //string
+            private IntPtr szFileNamePtr; // string
+            public string szFileName => szFileNamePtr.MarshalToStringUTF8();
         }
 
         public struct PLUG_CB_STOPDEBUG
@@ -110,22 +242,35 @@ namespace Managed.x64dbg.SDK
 
         public struct PLUG_CB_CREATEPROCESS
         {
-            public IntPtr CreateProcessInfo; //WAPI.CREATE_PROCESS_DEBUG_INFO
-            public IntPtr modInfo; //WAPI.IMAGEHLP_MODULE64
-            public IntPtr DebugFileName; //string
-            public IntPtr fdProcessInfo; //WAPI.PROCESS_INFORMATION
+            private IntPtr CreateProcessInfoPtr; //WAPI.CREATE_PROCESS_DEBUG_INFO
+            public WAPI.CREATE_PROCESS_DEBUG_INFO? CreateProcessInfo => CreateProcessInfoPtr.ToStruct<WAPI.CREATE_PROCESS_DEBUG_INFO>();
+
+            private IntPtr modInfoPtr; //WAPI.IMAGEHLP_MODULE64
+            public WAPI.IMAGEHLP_MODULE64? modInfo => modInfoPtr.ToStruct<WAPI.IMAGEHLP_MODULE64>();
+
+            private IntPtr DebugFileNamePtr; //string
+            public string DebugFileName => DebugFileNamePtr.MarshalToStringUTF8();
+
+            private IntPtr fdProcessInfoPtr; //WAPI.PROCESS_INFORMATION
+            public WAPI.PROCESS_INFORMATION? fdProcessInfo => fdProcessInfoPtr.ToStruct<WAPI.PROCESS_INFORMATION>();
         }
 
         public struct PLUG_CB_EXITPROCESS
         {
-            public WAPI.EXIT_PROCESS_DEBUG_INFO ExitProcess;
+            private IntPtr ExitProcessPtr;
+            public WAPI.EXIT_PROCESS_DEBUG_INFO? fdProcessInfo => ExitProcessPtr.ToStruct<WAPI.EXIT_PROCESS_DEBUG_INFO>();
         }
 
         public struct PLUG_CB_LOADDLL
         {
-            public IntPtr LoadDll; //WAPI.LOAD_DLL_DEBUG_INFO
-            public IntPtr modInfo; //WAPI.IMAGEHLP_MODULE64
-            public IntPtr modname; //string
+            private IntPtr LoadDllPtr; //WAPI.LOAD_DLL_DEBUG_INFO
+            public WAPI.LOAD_DLL_DEBUG_INFO? LoadDll => LoadDllPtr.ToStruct<WAPI.LOAD_DLL_DEBUG_INFO>();
+
+            private IntPtr modInfoPtr; //WAPI.IMAGEHLP_MODULE64
+            public WAPI.IMAGEHLP_MODULE64? modInfo => modInfoPtr.ToStruct<WAPI.IMAGEHLP_MODULE64>();
+
+            private IntPtr modnamePtr; //string
+            public string modname => modnamePtr.MarshalToStringUTF8();
         }
 
         public struct PLUG_CB_MENUENTRY
