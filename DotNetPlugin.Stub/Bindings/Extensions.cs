@@ -1,21 +1,33 @@
 ﻿using System;
-using System.IO;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace DotNetPlugin.Bindings.SDK
+namespace DotNetPlugin.Bindings
 {
     public static class Extensions
     {
+        static Extensions()
+        {
+#if AMD64
+            Debug.Assert(IntPtr.Size == 8);
+            toPtrStringFormat = "X16";
+#else
+            Debug.Assert(IntPtr.Size == 4);
+            toPtrStringFormat = "X8";
+#endif
+        }
+
+        private static readonly string toPtrStringFormat;
+
         public static string ToHexString(this IntPtr intPtr) =>
             intPtr.ToString("X");
 
         public static string ToHexString(this UIntPtr intPtr) =>
             ((nint)(nuint)intPtr).ToHexString();
 
-        private static readonly string toPtrStringFormat = "X" + IntPtr.Size * 2;
-        public static string ToPtrString(this IntPtr intPtr)
-            => intPtr.ToString(toPtrStringFormat);
+        public static string ToPtrString(this IntPtr intPtr) =>
+            intPtr.ToString(toPtrStringFormat);
 
         public static string ToPtrString(this UIntPtr intPtr) =>
             ((nint)(nuint)intPtr).ToPtrString();

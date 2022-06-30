@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
+using DotNetPlugin.Bindings;
 using DotNetPlugin.Bindings.SDK;
 using RGiesecke.DllExport;
 

@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace DotNetPlugin.Bindings.SDK
 {
     // https://github.com/x64dbg/TitanEngine/blob/x64dbg/SDK/C/TitanEngine.h
-    public class TitanEngine
+    public static class TitanEngine
     {
         public const int UE_STRUCT_PE32STRUCT = 1;
         public const int UE_STRUCT_PE64STRUCT = 2;

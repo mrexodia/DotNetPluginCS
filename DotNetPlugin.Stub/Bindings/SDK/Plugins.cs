@@ -42,7 +42,7 @@ namespace DotNetPlugin.Bindings.SDK
             if (cbType < 0 || _pluginCallbacks.Length <= (int)cbType)
                 throw new ArgumentOutOfRangeException(nameof(cbType));
 
-            CBPLUGIN_NATIVE delegatePtr = (cbType, callbackInfo) =>
+            CBPLUGIN_NATIVE callback = (cbType, callbackInfo) =>
             {
                 try
                 {
@@ -57,9 +57,9 @@ namespace DotNetPlugin.Bindings.SDK
             lock (_pluginCallbacks)
             {
                 // The CLR protects the delegate from being GC'd only for the duration of the call, so we need to keep a reference to it until unregistration.
-                _pluginCallbacks[(int)cbType] = delegatePtr;
+                _pluginCallbacks[(int)cbType] = callback;
 
-                _plugin_registercallback_native(pluginHandle, cbType, delegatePtr);
+                _plugin_registercallback_native(pluginHandle, cbType, callback);
             }
         }
 
@@ -107,7 +107,7 @@ namespace DotNetPlugin.Bindings.SDK
             if (cbCommand == null)
                 throw new ArgumentNullException(nameof(cbCommand));
 
-            CBPLUGINCOMMAND_NATIVE delegatePtr = (argc, argv) =>
+            CBPLUGINCOMMAND_NATIVE callback = (argc, argv) =>
             {
                 try
                 {
@@ -127,10 +127,10 @@ namespace DotNetPlugin.Bindings.SDK
             lock (_commandCallbacks)
             {
                 // The CLR protects the delegate from being GC'd only for the duration of the call, so we need to keep a reference to it until unregistration.
-                var success = _plugin_registercommand_native(pluginHandle, command, delegatePtr, debugonly);
+                var success = _plugin_registercommand_native(pluginHandle, command, callback, debugonly);
 
                 if (success)
-                    _commandCallbacks[command] = delegatePtr;
+                    _commandCallbacks[command] = callback;
 
                 return success;
             }
@@ -138,7 +138,7 @@ namespace DotNetPlugin.Bindings.SDK
 
         [DllImport(dll, CallingConvention = cdecl, EntryPoint = nameof(_plugin_unregistercommand), ExactSpelling = true)]
         private static extern bool _plugin_unregistercommand_native(int pluginHandle, [MarshalAs(UnmanagedType.LPUTF8Str)] string command);
-        
+
         public static bool _plugin_unregistercommand(int pluginHandle, string command)
         {
             if (command == null)
@@ -155,7 +155,11 @@ namespace DotNetPlugin.Bindings.SDK
             }
         }
 
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern void _plugin_debugskipexceptions(bool skip);
+
 #pragma warning disable 0649
+
         [Serializable]
         public unsafe struct PLUG_INITSTRUCT
         {
@@ -277,9 +281,30 @@ namespace DotNetPlugin.Bindings.SDK
         }
 
         [Serializable]
+        public struct PLUG_CB_EXCEPTION
+        {
+            private IntPtr ExceptionPtr;
+            public Win32.EXCEPTION_DEBUG_INFO? Exception => ExceptionPtr.ToStruct<Win32.EXCEPTION_DEBUG_INFO>();
+        }
+
+        [Serializable]
+        public struct PLUG_CB_DEBUGEVENT
+        {
+            private IntPtr DebugEventPtr;
+            public Win32.DEBUG_EVENT? DebugEvent => DebugEventPtr.ToStruct<Win32.DEBUG_EVENT>();
+        }
+
+        [Serializable]
         public struct PLUG_CB_MENUENTRY
         {
             public int hEntry;
+        }
+
+        [Serializable]
+        public struct PLUG_CB_TRACEEXECUTE
+        {
+            public nuint cip;
+            public bool stop;
         }
     }
 }
