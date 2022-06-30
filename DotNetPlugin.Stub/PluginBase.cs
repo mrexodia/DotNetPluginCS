@@ -36,7 +36,10 @@ namespace DotNetPlugin
                 var stopTask = StopAsync();
 
                 if (Task.WhenAny(stopTask, Task.Delay(5000)).GetAwaiter().GetResult() == stopTask)
-                    return stopTask.GetAwaiter().GetResult(); // also unwraps potential exceptions
+                {
+                    if (!stopTask.IsCanceled)
+                        return stopTask.ConfigureAwait(false).GetAwaiter().GetResult(); // also unwraps potential exception
+                }
             }
             catch (Exception ex)
             {
