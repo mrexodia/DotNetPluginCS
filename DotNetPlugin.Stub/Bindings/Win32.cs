@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DotNetPlugin.Bindings
 {
-    public class Win32
+    public static partial class Win32
     {
         public const int MAX_PATH = 260;
 
@@ -13,40 +13,6 @@ namespace DotNetPlugin.Bindings
         
         [DllImport("kernel32.dll", EntryPoint = "RtlZeroMemory", ExactSpelling = true)]
         public static extern void ZeroMemory(IntPtr dst, nuint length);
-
-        [Serializable]
-        public struct LOAD_DLL_DEBUG_INFO
-        {
-            public IntPtr hFile;
-            public IntPtr lpBaseOfDll;
-            public uint dwDebugInfoFileOffset;
-            public uint nDebugInfoSize;
-            public IntPtr lpImageName;
-            public ushort fUnicode;
-        }
-
-        public delegate uint PTHREAD_START_ROUTINE(IntPtr lpThreadParameter);
-
-        [Serializable]
-        public struct CREATE_PROCESS_DEBUG_INFO
-        {
-            public IntPtr hFile;
-            public IntPtr hProcess;
-            public IntPtr hThread;
-            public IntPtr lpBaseOfImage;
-            public uint dwDebugInfoFileOffset;
-            public uint nDebugInfoSize;
-            public IntPtr lpThreadLocalBase;
-            public IntPtr lpStartAddress; //PTHREAD_START_ROUTINE
-            public IntPtr lpImageName;
-            public ushort fUnicode;
-        }
-
-        [Serializable]
-        public struct EXIT_PROCESS_DEBUG_INFO
-        {
-            public uint dwExitCode;
-        }
 
         [Serializable]
         public struct IMAGEHLP_MODULE64
