@@ -18,12 +18,30 @@ namespace DotNetPlugin
         private static readonly Lazy<IPluginSession> NullSession = new Lazy<IPluginSession>(() => PluginSession.Null, LazyThreadSafetyMode.PublicationOnly);
         private static volatile Lazy<IPluginSession> s_session = NullSession;
         private static IPluginSession Session => s_session.Value;
+
+        internal static readonly string ImplAssemblyLocation;
 #else
         private static PluginSession Session = PluginSession.Null;
 #endif
 
         private static readonly string s_controlCommand = typeof(PluginMain).Assembly.GetName().Name.Replace(' ', '_');
         private static int s_pluginHandle;
+
+        private static Assembly TryLoadAssemblyFrom(AssemblyName assemblyName, string location, bool loadFromMemory = false)
+        {
+            var pluginBasePath = Path.GetDirectoryName(location);
+            var dllPath = Path.Combine(pluginBasePath, assemblyName.Name + ".dll");
+
+            if (!File.Exists(dllPath))
+                return null;
+
+            if (loadFromMemory)
+            {
+                return Assembly.Load(File.ReadAllBytes(dllPath));
+            }
+            else
+                return Assembly.LoadFile(dllPath);
+        }
 
         static PluginMain()
         {
@@ -40,13 +58,33 @@ namespace DotNetPlugin
                     if (assemblyName.Name == typeof(PluginMain).Assembly.GetName().Name)
                         return typeof(PluginMain).Assembly;
 
-                    var location = typeof(PluginMain).Assembly.Location;
-                    var pluginBasePath = Path.GetDirectoryName(location);
-                    var dllPath = Path.Combine(pluginBasePath, assemblyName.Name + ".dll");
-
-                    return Assembly.LoadFile(dllPath);
+                    return TryLoadAssemblyFrom(assemblyName, typeof(PluginMain).Assembly.Location);
                 };
             }
+#if ALLOW_UNLOADING
+            else
+            {
+                AppDomain.CurrentDomain.AssemblyResolve += (s, e) =>
+                {
+                    var assemblyName = new AssemblyName(e.Name);
+
+                    if (assemblyName.Name == typeof(PluginMain).Assembly.GetName().Name)
+                        return typeof(PluginMain).Assembly;
+
+                    return
+                        (ImplAssemblyLocation != null ? TryLoadAssemblyFrom(assemblyName, ImplAssemblyLocation, loadFromMemory: true) : null) ??
+                        TryLoadAssemblyFrom(assemblyName, typeof(PluginMain).Assembly.Location, loadFromMemory: true);
+                };
+            }
+
+            using (var resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("build.meta"))
+            {
+                if (resourceStream == null)
+                    return;
+
+                ImplAssemblyLocation = new StreamReader(resourceStream).ReadLine();
+            }
+#endif
         }
 
         public static void LogUnhandledException(object exceptionObject)
@@ -63,40 +101,104 @@ namespace DotNetPlugin
             }
         }
 
-        private static bool TryLoadPlugin(bool isInitial)
-        {
 #if ALLOW_UNLOADING
-            var newSession = new Lazy<IPluginSession>(() => new PluginSessionProxy(), LazyThreadSafetyMode.ExecutionAndPublication);
-            var originalSession = Interlocked.CompareExchange(ref s_session, newSession, NullSession);
-            if (originalSession == NullSession)
+        private static void HandleImplChanged(object sender)
+        {
+            var session = s_session;
+            if (ReferenceEquals(session.Value, sender) && UnloadPlugin(session))
+                LoadPlugin(session);
+        }
+        
+        private static bool LoadPlugin(Lazy<IPluginSession> reloadedSession = null)
+        {
+            if (!TryLoadPlugin(isInitial: false, reloadedSession))
+            {
+                PLogTextWriter.Default.WriteLine($"[{Session.PluginName}] Failed to load the implementation library.");
+                return false;
+            }
+
+            Session.PluginHandle = s_pluginHandle;
+
+            if (!Session.Init())
+            {
+                PLogTextWriter.Default.WriteLine($"[{Session.PluginName}] Failed to initialize the implementation library.");
+                TryUnloadPlugin();
+                return false;
+            }
+
+            PLogTextWriter.Default.WriteLine($"[{Session.PluginName}] Successfully loaded the implementation library.");
+            return true;
+        }
+
+        private static bool UnloadPlugin(Lazy<IPluginSession> reloadedSession = null)
+        {
+            if (!TryUnloadPlugin(reloadedSession))
+            {
+                PLogTextWriter.Default.WriteLine($"[{Session.PluginName}] Failed to unload the implementation library.");
+                return false;
+            }
+
+            PLogTextWriter.Default.WriteLine($"[{Session.PluginName}] Successfully unloaded the implementation library.");
+            return true;
+        }
+
+        private static bool TryLoadPlugin(bool isInitial, Lazy<IPluginSession> reloadedSession = null)
+        {
+            var expectedSession = reloadedSession ?? NullSession;
+            var newSession = new Lazy<IPluginSession>(() => new PluginSessionProxy(HandleImplChanged), LazyThreadSafetyMode.ExecutionAndPublication);
+            var originalSession = Interlocked.CompareExchange(ref s_session, newSession, expectedSession);
+            if (originalSession == expectedSession)
             {
                 _ = newSession.Value; // forces creation of session
+
                 return true;
             }
+
+            return false;
+        }
+
+        private static bool TryUnloadPlugin(Lazy<IPluginSession> reloadedSession = null)
+        {
+            Lazy<IPluginSession> originalSession;
+
+            if (reloadedSession == null)
+            {
+                originalSession = Interlocked.Exchange(ref s_session, NullSession);
+            }
+            else
+            {
+                originalSession =
+                    Interlocked.CompareExchange(ref s_session, reloadedSession, reloadedSession) == reloadedSession ?
+                    reloadedSession :
+                    NullSession;
+            }
+
+            if (originalSession != NullSession)
+            {
+                originalSession.Value.Dispose();
+                return true;
+            }
+
+            return false;
+        }
+
 #else
+        private static bool TryLoadPlugin(bool isInitial)
+        {
             if (isInitial)
             {
                 Session = new PluginSession();
                 return true;
             }
-#endif
 
             return false;
         }
 
         private static bool TryUnloadPlugin()
         {
-#if ALLOW_UNLOADING
-            var originalSession = Interlocked.Exchange(ref s_session, NullSession);
-            if (originalSession != NullSession)
-            {
-                originalSession.Value.Dispose();
-                return true;
-            }
-#endif
-
             return false;
         }
+#endif
 
         [DllExport("pluginit", CallingConvention.Cdecl)]
         public static bool pluginit(ref Plugins.PLUG_INITSTRUCT initStruct)
@@ -128,6 +230,12 @@ namespace DotNetPlugin
             return true;
         }
 
+        [DllExport("plugsetup", CallingConvention.Cdecl)]
+        private static void plugsetup(ref Plugins.PLUG_SETUPSTRUCT setupStruct)
+        {
+            Session.Setup(in setupStruct);
+        }
+
         [DllExport("plugstop", CallingConvention.Cdecl)]
         private static bool plugstop()
         {
@@ -140,52 +248,25 @@ namespace DotNetPlugin
             return success;
         }
 
-        [DllExport("plugsetup", CallingConvention.Cdecl)]
-        private static void plugsetup(ref Plugins.PLUG_SETUPSTRUCT setupStruct)
-        {
-            Session.Setup(in setupStruct);
-        }
-
+#if ALLOW_UNLOADING
         private static bool ControlCommand(int argc, string[] argv)
         {
             if (argc > 1)
             {
                 if ("load".Equals(argv[1], StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!TryLoadPlugin(isInitial: false))
-                    {
-                        PLogTextWriter.Default.WriteLine($"[{Session.PluginName}] Failed to load the implementation library.");
-                        return false;
-                    }
-
-                    Session.PluginHandle = s_pluginHandle;
-
-                    if (!Session.Init())
-                    {
-                        PLogTextWriter.Default.WriteLine($"[{Session.PluginName}] Failed to initialize the implementation library.");
-                        TryUnloadPlugin();
-                        return false;
-                    }
-
-                    PLogTextWriter.Default.WriteLine($"[{Session.PluginName}] Successfully loaded the implementation library.");
-                    return true;
+                    return LoadPlugin();
                 }
                 else if ("unload".Equals(argv[1], StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!TryUnloadPlugin())
-                    {
-                        PLogTextWriter.Default.WriteLine($"[{Session.PluginName}] Failed to unload the implementation library.");
-                        return false;
-                    }
-
-                    PLogTextWriter.Default.WriteLine($"[{Session.PluginName}] Successfully unloaded the implementation library.");
-                    return true;
+                    return UnloadPlugin();
                 }
             }
 
             PLogTextWriter.Default.WriteLine($"[{Session.PluginName}] Invalid syntax. Usage: {s_controlCommand} [load|unload]");
             return false;
         }
+#endif
 
         [DllExport("CBINITDEBUG", CallingConvention.Cdecl)]
         public static void CBINITDEBUG(Plugins.CBTYPE cbType, in Plugins.PLUG_CB_INITDEBUG info)
