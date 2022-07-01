@@ -3,8 +3,8 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
-using DotNetPlugin.Bindings;
-using DotNetPlugin.Bindings.SDK;
+using DotNetPlugin.NativeBindings;
+using DotNetPlugin.NativeBindings.SDK;
 using RGiesecke.DllExport;
 
 namespace DotNetPlugin
@@ -19,12 +19,13 @@ namespace DotNetPlugin
         private static volatile Lazy<IPluginSession> s_session = NullSession;
         private static IPluginSession Session => s_session.Value;
 
+        private static readonly string s_controlCommand = typeof(PluginMain).Assembly.GetName().Name.Replace(' ', '_');
+
         internal static readonly string ImplAssemblyLocation;
 #else
         private static PluginSession Session = PluginSession.Null;
 #endif
 
-        private static readonly string s_controlCommand = typeof(PluginMain).Assembly.GetName().Name.Replace(' ', '_');
         private static int s_pluginHandle;
 
         private static Assembly TryLoadAssemblyFrom(AssemblyName assemblyName, string location, bool loadFromMemory = false)

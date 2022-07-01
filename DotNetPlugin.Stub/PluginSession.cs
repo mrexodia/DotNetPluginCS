@@ -3,7 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using DotNetPlugin.Bindings.SDK;
+using DotNetPlugin.NativeBindings.SDK;
 
 namespace DotNetPlugin
 {

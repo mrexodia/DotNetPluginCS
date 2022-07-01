@@ -1,4 +1,4 @@
-﻿using DotNetPlugin.Bindings.SDK;
+﻿using DotNetPlugin.NativeBindings.SDK;
 
 namespace DotNetPlugin
 {

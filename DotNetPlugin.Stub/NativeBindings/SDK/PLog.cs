@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using DotNetPlugin.Bindings.SDK;
+using DotNetPlugin.NativeBindings.SDK;
 
-namespace DotNetPlugin.Bindings
+namespace DotNetPlugin.NativeBindings
 {
     public sealed class PLogTextWriter : TextWriter
     {

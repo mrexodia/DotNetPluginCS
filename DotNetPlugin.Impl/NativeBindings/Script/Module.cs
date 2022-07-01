@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using DotNetPlugin.Bindings.SDK;
+using DotNetPlugin.NativeBindings.SDK;
+using DotNetPlugin.NativeBindings.Win32;
 
-namespace DotNetPlugin.Bindings.Script
+namespace DotNetPlugin.NativeBindings.Script
 {
     // https://github.com/x64dbg/x64dbg/blob/development/src/dbg/_scriptapi_module.h
     public static class Module
@@ -25,13 +26,13 @@ namespace DotNetPlugin.Bindings.Script
                 }
             }
 
-            private fixed byte pathBytes[Win32.MAX_PATH];
+            private fixed byte pathBytes[Win32Constants.MAX_PATH];
             public string path
             {
                 get
                 {
                     fixed (byte* ptr = pathBytes)
-                        return new IntPtr(ptr).MarshalToStringUTF8(Win32.MAX_PATH);
+                        return new IntPtr(ptr).MarshalToStringUTF8(Win32Constants.MAX_PATH);
                 }
             }
         }

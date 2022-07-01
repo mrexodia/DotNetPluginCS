@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace DotNetPlugin.Bindings.SDK
+namespace DotNetPlugin.NativeBindings.SDK
 {
     // https://github.com/x64dbg/TitanEngine/blob/x64dbg/SDK/C/TitanEngine.h
     public static class TitanEngine

@@ -1,9 +1,9 @@
 using System;
 using System.Threading;
 using System.Windows.Forms;
-using DotNetPlugin.Bindings;
-using DotNetPlugin.Bindings.Script;
-using DotNetPlugin.Bindings.SDK;
+using DotNetPlugin.NativeBindings;
+using DotNetPlugin.NativeBindings.Script;
+using DotNetPlugin.NativeBindings.SDK;
 using Microsoft.VisualBasic;
 using Microsoft.VisualBasic.CompilerServices;
 
