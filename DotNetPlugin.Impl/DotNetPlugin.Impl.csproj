@@ -4,7 +4,7 @@
     <RootNamespace>$(PluginRootNamespace)</RootNamespace>
     <TargetFramework>net472</TargetFramework>
     <Platforms>x86;x64</Platforms>
-    <OutputPath>..\bin\$(Platform)\$(Configuration)\</OutputPath>
+    <OutputPath>$(PluginOutputPath)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
@@ -14,17 +14,81 @@
 
   <PropertyGroup Condition="'$(Platform)'=='x86'">
     <DefineConstants>X86;$(DefineConstants)</DefineConstants>
+    <PluginExt>.dp32</PluginExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)'=='x64'">
     <DefineConstants>AMD64;$(DefineConstants)</DefineConstants>
+    <PluginExt>.dp64</PluginExt>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DotNetPlugin.Stub\DotNetPlugin.Stub.csproj" />
+    <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.18.2" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
+
+  <!--
+    When plugin unloading is allowed (Debug builds):
+    1. Add actual DLL exports by rewriting the Stub assembly
+    2. Rename Stub assembly to have the plugin extension
+    
+    When plugin unloading is not allowed (Release builds):
+    1. IL repack Stub, Impl (and possible other references) into a single assembly (see ILRepack.targets)
+    2. Add actual DLL exports by rewriting the merged assembly
+    3. Rename merged assembly to have the plugin extension
+  -->
+
+  <Target Name="SetPostProcessingProperties" BeforeTargets="ILRepacker">
+    <PropertyGroup>
+      <StubAssemblyName>$([System.Text.RegularExpressions.Regex]::Replace($(TargetName), '\.Impl$', ''))</StubAssemblyName>
+      <StubAssemblyExt>.dll</StubAssemblyExt>
+      <StubAssemblyPath>$(TargetDir)$(StubAssemblyName)$(StubAssemblyExt)</StubAssemblyPath>
+      <DllExportInputFileName>$(StubAssemblyPath)</DllExportInputFileName>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ILRepackLibraryPath Include="$(OutputPath)" />
+      <ILRepackLibraryPath Include="$(SolutionDir)packages\DllExport.1.7.4\gcache\$(DllExportMetaXBase)\$(DllExportNamespace)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- DLL exports rewriting -->
+
+  <PropertyGroup>
+    <DllExportIdent>332F9911-3C74-44E1-8ADC-5A1E19FE3F7E</DllExportIdent>
+    <DllExportMetaLibName>DllExport.dll</DllExportMetaLibName>
+    <DllExportNamespace>RGiesecke.DllExport</DllExportNamespace>
+    <DllExportDDNSCecil>true</DllExportDDNSCecil>
+    <DllExportSkipOnAnyCpu>false</DllExportSkipOnAnyCpu>
+    <DllExportPlatform>Auto</DllExportPlatform>
+    <DllExportOrdinalsBase>1</DllExportOrdinalsBase>
+    <DllExportGenExpLib>false</DllExportGenExpLib>
+    <DllExportOurILAsm>false</DllExportOurILAsm>
+    <DllExportSysObjRebase>false</DllExportSysObjRebase>
+    <DllExportLeaveIntermediateFiles>true</DllExportLeaveIntermediateFiles>
+    <DllExportTimeout>30000</DllExportTimeout>
+    <DllExportPeCheck>2</DllExportPeCheck>
+    <DllExportPatches>0</DllExportPatches>
+    <DllExportPreProcType>0</DllExportPreProcType>
+    <DllExportPostProcType>0</DllExportPostProcType>
+  </PropertyGroup>
+  
+  <ImportGroup Label=".NET DllExport">
+    <Import Project="$(SolutionDir)packages\DllExport.1.7.4\tools\net.r_eg.DllExport.targets" Condition="Exists($([MSBuild]::Escape('$(SolutionDir)packages\DllExport.1.7.4\tools\net.r_eg.DllExport.targets')))" Label="8337224c9ad9e356" />
+  </ImportGroup>
+
+  <Target Name="DllExportRPkgDynamicImport" BeforeTargets="PostBuildEvent" DependsOnTargets="GetFrameworkPaths" Condition="'$(DllExportModImported)' != 'true' And '$(DllExportRPkgDyn)' != 'false'">
+    <MSBuild BuildInParallel="true" UseResultsCache="true" Projects="$(MSBuildProjectFullPath)" Properties="DllExportRPkgDyn=true" Targets="Build" />
+  </Target>
+
+  <!-- Set custom plugin extension -->
+
+  <Target Name="SetPluginExt" AfterTargets="DllExportMod">
+    <Move SourceFiles="$(StubAssemblyPath)" DestinationFiles="$(TargetDir)$(StubAssemblyName)$(PluginExt)" />
+  </Target>
+
 </Project>

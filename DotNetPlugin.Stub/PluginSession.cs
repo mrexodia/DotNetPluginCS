@@ -43,7 +43,10 @@ namespace DotNetPlugin
 
         private static PluginBase CreatePlugin()
         {
-            var implAssemblyName = typeof(PluginMain).Assembly.GetName().Name + ".Impl";
+            var implAssemblyName = typeof(PluginMain).Assembly.GetName().Name;
+#if ALLOW_UNLOADING
+            implAssemblyName += ".Impl";
+#endif
             var pluginTypeName = typeof(PluginMain).Namespace + ".Plugin";
             var pluginType = GetPluginType(pluginTypeName, implAssemblyName);
             return (PluginBase)Activator.CreateInstance(pluginType);
