@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using DotNetPlugin.NativeBindings.Win32;
 
-namespace DotNetPlugin.Bindings.SDK
+namespace DotNetPlugin.NativeBindings.SDK
 {
     // https://github.com/x64dbg/x64dbg/blob/development/src/dbg/_plugins.h
     public static class Plugins
@@ -248,33 +249,33 @@ namespace DotNetPlugin.Bindings.SDK
         public struct PLUG_CB_CREATEPROCESS
         {
             private IntPtr CreateProcessInfoPtr; //WAPI.CREATE_PROCESS_DEBUG_INFO
-            public Win32.CREATE_PROCESS_DEBUG_INFO? CreateProcessInfo => CreateProcessInfoPtr.ToStruct<Win32.CREATE_PROCESS_DEBUG_INFO>();
+            public CREATE_PROCESS_DEBUG_INFO? CreateProcessInfo => CreateProcessInfoPtr.ToStruct<CREATE_PROCESS_DEBUG_INFO>();
 
             private IntPtr modInfoPtr; //WAPI.IMAGEHLP_MODULE64
-            public Win32.IMAGEHLP_MODULE64? modInfo => modInfoPtr.ToStruct<Win32.IMAGEHLP_MODULE64>();
+            public IMAGEHLP_MODULE64? modInfo => modInfoPtr.ToStruct<IMAGEHLP_MODULE64>();
 
             private IntPtr DebugFileNamePtr; //string
             public string DebugFileName => DebugFileNamePtr.MarshalToStringUTF8();
 
             private IntPtr fdProcessInfoPtr; //WAPI.PROCESS_INFORMATION
-            public Win32.PROCESS_INFORMATION? fdProcessInfo => fdProcessInfoPtr.ToStruct<Win32.PROCESS_INFORMATION>();
+            public PROCESS_INFORMATION? fdProcessInfo => fdProcessInfoPtr.ToStruct<PROCESS_INFORMATION>();
         }
 
         [Serializable]
         public struct PLUG_CB_EXITPROCESS
         {
             private IntPtr ExitProcessPtr;
-            public Win32.EXIT_PROCESS_DEBUG_INFO? fdProcessInfo => ExitProcessPtr.ToStruct<Win32.EXIT_PROCESS_DEBUG_INFO>();
+            public EXIT_PROCESS_DEBUG_INFO? fdProcessInfo => ExitProcessPtr.ToStruct<EXIT_PROCESS_DEBUG_INFO>();
         }
 
         [Serializable]
         public struct PLUG_CB_LOADDLL
         {
             private IntPtr LoadDllPtr; //WAPI.LOAD_DLL_DEBUG_INFO
-            public Win32.LOAD_DLL_DEBUG_INFO? LoadDll => LoadDllPtr.ToStruct<Win32.LOAD_DLL_DEBUG_INFO>();
+            public LOAD_DLL_DEBUG_INFO? LoadDll => LoadDllPtr.ToStruct<LOAD_DLL_DEBUG_INFO>();
 
             private IntPtr modInfoPtr; //WAPI.IMAGEHLP_MODULE64
-            public Win32.IMAGEHLP_MODULE64? modInfo => modInfoPtr.ToStruct<Win32.IMAGEHLP_MODULE64>();
+            public IMAGEHLP_MODULE64? modInfo => modInfoPtr.ToStruct<IMAGEHLP_MODULE64>();
 
             private IntPtr modnamePtr; //string
             public string modname => modnamePtr.MarshalToStringUTF8();
@@ -284,14 +285,14 @@ namespace DotNetPlugin.Bindings.SDK
         public struct PLUG_CB_EXCEPTION
         {
             private IntPtr ExceptionPtr;
-            public Win32.EXCEPTION_DEBUG_INFO? Exception => ExceptionPtr.ToStruct<Win32.EXCEPTION_DEBUG_INFO>();
+            public EXCEPTION_DEBUG_INFO? Exception => ExceptionPtr.ToStruct<EXCEPTION_DEBUG_INFO>();
         }
 
         [Serializable]
         public struct PLUG_CB_DEBUGEVENT
         {
             private IntPtr DebugEventPtr;
-            public Win32.DEBUG_EVENT? DebugEvent => DebugEventPtr.ToStruct<Win32.DEBUG_EVENT>();
+            public DEBUG_EVENT? DebugEvent => DebugEventPtr.ToStruct<DEBUG_EVENT>();
         }
 
         [Serializable]

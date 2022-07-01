@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace DotNetPlugin.Bindings
+namespace DotNetPlugin.NativeBindings
 {
     public static class Extensions
     {

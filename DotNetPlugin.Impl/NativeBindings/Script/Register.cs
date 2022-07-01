@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace DotNetPlugin.Bindings.Script
+namespace DotNetPlugin.NativeBindings.Script
 {
     public static class Register
     {

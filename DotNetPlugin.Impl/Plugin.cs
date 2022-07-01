@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-using DotNetPlugin.Bindings;
-using DotNetPlugin.Bindings.SDK;
+using DotNetPlugin.NativeBindings;
+using DotNetPlugin.NativeBindings.SDK;
 using Microsoft.VisualBasic;
 
 namespace DotNetPlugin

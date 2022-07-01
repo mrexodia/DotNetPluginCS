@@ -2,7 +2,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace DotNetPlugin.Bindings.SDK
+namespace DotNetPlugin.NativeBindings.SDK
 {
     // https://github.com/x64dbg/x64dbg/blob/development/src/bridge/bridgemain.h
     public static partial class Bridge
