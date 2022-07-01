@@ -97,7 +97,11 @@ namespace DotNetPlugin
 
             RetryFileAccess:
 
-            try { File.OpenRead(PluginMain.ImplAssemblyLocation); }
+            try 
+            { 
+                if (File.Exists(PluginMain.ImplAssemblyLocation))
+                    File.OpenRead(PluginMain.ImplAssemblyLocation).Dispose(); 
+            }
             catch
             {
                 await Task.Delay(1000, _implChangeWatcherCts.Token).ConfigureAwait(false);
