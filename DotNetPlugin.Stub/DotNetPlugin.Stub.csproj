@@ -4,7 +4,6 @@
     <RootNamespace>$(PluginRootNamespace)</RootNamespace>
     <TargetFramework>net472</TargetFramework>
     <Platforms>x86;x64</Platforms>
-    <OutputPath>..\bin\$(Platform)\$(Configuration)\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
@@ -21,10 +20,6 @@
     <CustomTargetExt>.dp64</CustomTargetExt>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <AllowUnloading>true</AllowUnloading>
-  </PropertyGroup>
-
   <Choose>
     <When Condition="'$(AllowUnloading)'=='true'">
       <PropertyGroup>
@@ -38,13 +33,14 @@
   </Choose>
 
   <!-- Writes the target path of the Impl assembly to file and embeds that file as a resource in the current assembly. -->
+
   <Target Name="GenerateBuildMetadata" BeforeTargets="BeforeBuild" Condition="'$(AllowUnloading)'=='true'">
     <PropertyGroup>
       <BuildMetadataFileName>build.meta</BuildMetadataFileName>
       <BuildMetadataFilePath>$(IntermediateOutputPath)$(BuildMetadataFileName)</BuildMetadataFilePath>
-      <ImplTargetPath>$(TargetDir)$(TargetName).Impl$(TargetExt)</ImplTargetPath>
+      <ImplTargetPath>$([System.IO.Path]::GetFullPath($(PluginOutputPath)))$(TargetName).Impl$(TargetExt)</ImplTargetPath>
     </PropertyGroup>
-    
+
     <ReadLinesFromFile File="$(BuildMetadataFilePath)" ContinueOnError="true">
       <Output TaskParameter="Lines" PropertyName="BuildMetadataContent" />
     </ReadLinesFromFile>
@@ -59,23 +55,11 @@
     </ItemGroup>
   </Target>
 
+  <!-- DLL exports rewriting  -->
+
   <PropertyGroup>
-    <DllExportIdent>332F9911-3C74-44E1-8ADC-5A1E19FE3F7E</DllExportIdent>
     <DllExportMetaLibName>DllExport.dll</DllExportMetaLibName>
     <DllExportNamespace>RGiesecke.DllExport</DllExportNamespace>
-    <DllExportDDNSCecil>true</DllExportDDNSCecil>
-    <DllExportSkipOnAnyCpu>false</DllExportSkipOnAnyCpu>
-    <DllExportPlatform>Auto</DllExportPlatform>
-    <DllExportOrdinalsBase>1</DllExportOrdinalsBase>
-    <DllExportGenExpLib>false</DllExportGenExpLib>
-    <DllExportOurILAsm>false</DllExportOurILAsm>
-    <DllExportSysObjRebase>false</DllExportSysObjRebase>
-    <DllExportLeaveIntermediateFiles>true</DllExportLeaveIntermediateFiles>
-    <DllExportTimeout>30000</DllExportTimeout>
-    <DllExportPeCheck>2</DllExportPeCheck>
-    <DllExportPatches>0</DllExportPatches>
-    <DllExportPreProcType>0</DllExportPreProcType>
-    <DllExportPostProcType>0</DllExportPostProcType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -89,6 +73,7 @@
   <ImportGroup Label=".NET DllExport">
     <Import Project="$(SolutionDir)packages\DllExport.1.7.4\tools\net.r_eg.DllExport.targets" Condition="Exists($([MSBuild]::Escape('$(SolutionDir)packages\DllExport.1.7.4\tools\net.r_eg.DllExport.targets')))" Label="8337224c9ad9e356" />
   </ImportGroup>
+
   <Target Name="DllExportRestorePkg" BeforeTargets="PrepareForBuild">
     <Error Condition="!Exists('$(SolutionDir)DllExport.bat')" Text="DllExport.bat is not found. Path: '$(SolutionDir)' - https://github.com/3F/DllExport" />
     <Exec Condition="('$(DllExportModImported)' != 'true' Or !Exists('$(SolutionDir)packages\DllExport.1.7.4\tools\net.r_eg.DllExport.targets')) And Exists('$(SolutionDir)DllExport.bat')" Command=".\DllExport.bat  -action Restore" WorkingDirectory="$(SolutionDir)" />
@@ -103,12 +88,8 @@
       </Reference>
     </ItemGroup>
   </Target>
-  <Target Name="DllExportRPkgDynamicImport" BeforeTargets="PostBuildEvent" DependsOnTargets="GetFrameworkPaths" Condition="'$(DllExportModImported)' != 'true' And '$(DllExportRPkgDyn)' != 'false'">
-    <MSBuild BuildInParallel="true" UseResultsCache="true" Projects="$(MSBuildProjectFullPath)" Properties="DllExportRPkgDyn=true" Targets="Build" />
-  </Target>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <!-- NOTE: we cannot simply override TargetExt because that breaks DllExport -->
-    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(TargetDir)$(TargetName)$(CustomTargetExt)" />
+  <Target Name="DllExportMod">
+    <!-- Suppress actual IL rewriting because we want to do that at a later stage (see DotNetPlugin.Impl) -->
   </Target>
 </Project>

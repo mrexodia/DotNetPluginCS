@@ -4,5 +4,10 @@
     <PluginName>x64dbgDotNetPlugin</PluginName>
     <PluginAssemblyName>DotNetPlugin</PluginAssemblyName>
     <PluginRootNamespace>DotNetPlugin</PluginRootNamespace>
+    <PluginOutputPath>..\bin\$(Platform)\$(Configuration)\</PluginOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <AllowUnloading>true</AllowUnloading>
   </PropertyGroup>
 </Project>
