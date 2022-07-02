@@ -46,8 +46,6 @@ namespace DotNetPlugin
 
         public void Dispose() => Stop();
 
-        public int PluginVersion => _session.PluginVersion;
-        public string PluginName => _session.PluginName;
         public int PluginHandle
         {
             get => _session.PluginHandle;

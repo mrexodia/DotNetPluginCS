@@ -3,7 +3,6 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
-using DotNetPlugin.NativeBindings;
 using DotNetPlugin.NativeBindings.SDK;
 using RGiesecke.DllExport;
 
@@ -19,7 +18,7 @@ namespace DotNetPlugin
         private static volatile Lazy<IPluginSession> s_session = NullSession;
         private static IPluginSession Session => s_session.Value;
 
-        private static readonly string s_controlCommand = typeof(PluginMain).Assembly.GetName().Name.Replace(' ', '_');
+        private static readonly string s_controlCommand = PluginBase.PluginName.Replace(' ', '_');
 
         internal static readonly string ImplAssemblyLocation;
 #else
@@ -27,6 +26,7 @@ namespace DotNetPlugin
 #endif
 
         private static int s_pluginHandle;
+        private static Plugins.PLUG_SETUPSTRUCT s_setupStruct;
 
         private static Assembly TryLoadAssemblyFrom(AssemblyName assemblyName, string location, bool loadFromMemory = false)
         {
@@ -98,7 +98,7 @@ namespace DotNetPlugin
             {
                 errorMessage += Environment.NewLine;
                 File.AppendAllText(logPath, errorMessage);
-                PLogTextWriter.Default.WriteLine(errorMessage);
+                PluginBase.LogError(errorMessage);
             }
         }
 
@@ -114,7 +114,7 @@ namespace DotNetPlugin
         {
             if (!TryLoadPlugin(isInitial: false, reloadedSession))
             {
-                PLogTextWriter.Default.WriteLine($"[{Session.PluginName}] Failed to load the implementation library.");
+                PluginBase.LogError("Failed to load the implementation assembly.");
                 return false;
             }
 
@@ -122,12 +122,14 @@ namespace DotNetPlugin
 
             if (!Session.Init())
             {
-                PLogTextWriter.Default.WriteLine($"[{Session.PluginName}] Failed to initialize the implementation library.");
+                PluginBase.LogError("Failed to initialize the implementation assembly.");
                 TryUnloadPlugin();
                 return false;
             }
 
-            PLogTextWriter.Default.WriteLine($"[{Session.PluginName}] Successfully loaded the implementation library.");
+            Session.Setup(s_setupStruct);
+
+            PluginBase.LogInfo("Successfully loaded the implementation assembly.");
             return true;
         }
 
@@ -135,11 +137,11 @@ namespace DotNetPlugin
         {
             if (!TryUnloadPlugin(reloadedSession))
             {
-                PLogTextWriter.Default.WriteLine($"[{Session.PluginName}] Failed to unload the implementation library.");
+                PluginBase.LogError("Failed to unload the implementation assembly.");
                 return false;
             }
 
-            PLogTextWriter.Default.WriteLine($"[{Session.PluginName}] Successfully unloaded the implementation library.");
+            PluginBase.LogInfo("Successfully unloaded the implementation assembly.");
             return true;
         }
 
@@ -208,14 +210,14 @@ namespace DotNetPlugin
                 return false;
 
             initStruct.sdkVersion = Plugins.PLUG_SDKVERSION;
-            initStruct.pluginVersion = Session.PluginVersion;
-            initStruct.pluginName = Session.PluginName;
+            initStruct.pluginVersion = PluginBase.PluginVersion;
+            initStruct.pluginName = PluginBase.PluginName;
             Session.PluginHandle = s_pluginHandle = initStruct.pluginHandle;
 
 #if ALLOW_UNLOADING
             if (!Plugins._plugin_registercommand(s_pluginHandle, s_controlCommand, ControlCommand, false))
             {
-                PLogTextWriter.Default.WriteLine($"[{initStruct.pluginName}] Failed to register the \"'{s_controlCommand}'\" command.");
+                PluginBase.LogError($"Failed to register the \"'{s_controlCommand}'\" command.");
                 TryUnloadPlugin();
                 return false;
             }
@@ -223,7 +225,7 @@ namespace DotNetPlugin
 
             if (!Session.Init())
             {
-                PLogTextWriter.Default.WriteLine($"[{Session.PluginName}] Failed to initialize the implementation library.");
+                PluginBase.LogError("Failed to initialize the implementation assembly.");
                 TryUnloadPlugin();
                 return false;
             }
@@ -234,6 +236,8 @@ namespace DotNetPlugin
         [DllExport("plugsetup", CallingConvention.Cdecl)]
         private static void plugsetup(ref Plugins.PLUG_SETUPSTRUCT setupStruct)
         {
+            s_setupStruct = setupStruct;
+
             Session.Setup(in setupStruct);
         }
 
@@ -250,21 +254,21 @@ namespace DotNetPlugin
         }
 
 #if ALLOW_UNLOADING
-        private static bool ControlCommand(int argc, string[] argv)
+        private static bool ControlCommand(string[] args)
         {
-            if (argc > 1)
+            if (args.Length > 1)
             {
-                if ("load".Equals(argv[1], StringComparison.OrdinalIgnoreCase))
+                if ("load".Equals(args[1], StringComparison.OrdinalIgnoreCase))
                 {
                     return LoadPlugin();
                 }
-                else if ("unload".Equals(argv[1], StringComparison.OrdinalIgnoreCase))
+                else if ("unload".Equals(args[1], StringComparison.OrdinalIgnoreCase))
                 {
                     return UnloadPlugin();
                 }
             }
 
-            PLogTextWriter.Default.WriteLine($"[{Session.PluginName}] Invalid syntax. Usage: {s_controlCommand} [load|unload]");
+            PluginBase.LogError($"Invalid syntax. Usage: {s_controlCommand} [load|unload]");
             return false;
         }
 #endif

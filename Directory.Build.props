@@ -1,10 +1,12 @@
 ﻿<Project>
   <PropertyGroup>
-    <LangVersion>9</LangVersion>
     <PluginName>x64dbgDotNetPlugin</PluginName>
     <PluginAssemblyName>DotNetPlugin</PluginAssemblyName>
+
     <PluginRootNamespace>DotNetPlugin</PluginRootNamespace>
     <PluginOutputPath>..\bin\$(Platform)\$(Configuration)\</PluginOutputPath>
+
+    <LangVersion>9</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">

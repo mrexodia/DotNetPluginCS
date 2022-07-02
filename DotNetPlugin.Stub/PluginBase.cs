@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using DotNetPlugin.NativeBindings;
 using DotNetPlugin.NativeBindings.SDK;
 
 namespace DotNetPlugin
@@ -12,18 +14,33 @@ namespace DotNetPlugin
     {
         internal static PluginBase Null = new PluginBase();
 
-        private static readonly string DefaultPluginName =
-            ((AssemblyTitleAttribute)typeof(PluginMain).Assembly.GetCustomAttribute(typeof(AssemblyTitleAttribute)))?.Title ??
+        public static readonly string PluginName =
+            typeof(PluginMain).Assembly.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ??
             typeof(PluginMain).Assembly.GetName().Name;
 
-        private static readonly int DefaultPluginVersion = typeof(PluginMain).Assembly.GetName().Version.Major;
+        public static readonly int PluginVersion = typeof(PluginMain).Assembly.GetName().Version.Major;
+
+        private static readonly string PluginLogPrefix = $"[PLUGIN, {PluginName}]";
+
+        public static void LogInfo(string message) => PLogTextWriter.Default.WriteLine(PluginLogPrefix + " " + message);
+        public static void LogError(string message) => LogInfo(message);
+
+        IDisposable _commandRegistrations;
+        IDisposable _expressionFunctionRegistrations;
 
         protected PluginBase() { }
 
-        public virtual int PluginVersion => DefaultPluginVersion;
-        public virtual string PluginName => DefaultPluginName;
-
         public int PluginHandle { get; internal set; }
+
+        internal bool InitInternal()
+        {
+            var pluginMethods = GetType().GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+
+            _commandRegistrations = Commands.Initialize(this, pluginMethods);
+            _expressionFunctionRegistrations = ExpressionFunctions.Initialize(this, pluginMethods);
+
+            return Init();
+        }
 
         public virtual bool Init() => true;
 
@@ -44,6 +61,11 @@ namespace DotNetPlugin
             catch (Exception ex)
             {
                 PluginMain.LogUnhandledException(ex);
+            }
+            finally
+            {
+                _commandRegistrations.Dispose();
+                _expressionFunctionRegistrations.Dispose();
             }
 
             return false;

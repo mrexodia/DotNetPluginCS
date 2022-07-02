@@ -7,8 +7,6 @@ namespace DotNetPlugin
     /// </summary>
     internal interface IPlugin
     {
-        int PluginVersion { get; }
-        string PluginName { get; }
         int PluginHandle { get; }
 
         bool Init();
