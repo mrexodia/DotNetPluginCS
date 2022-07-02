@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using DotNetPlugin.NativeBindings;
 using DotNetPlugin.NativeBindings.SDK;
 
 namespace DotNetPlugin
@@ -14,7 +15,7 @@ namespace DotNetPlugin
 #if ALLOW_UNLOADING
         MarshalByRefObject, IPluginSession
 #else
-        IPlugin, IDisposable
+        IPlugin
 #endif
     {
         internal static PluginSession Null = new PluginSession(PluginBase.Null);
@@ -52,7 +53,11 @@ namespace DotNetPlugin
             return (PluginBase)Activator.CreateInstance(pluginType);
         }
 
+#if ALLOW_UNLOADING
         private volatile PluginBase _plugin;
+#else
+        private readonly PluginBase _plugin;
+#endif
 
         private PluginSession(PluginBase plugin)
         {
@@ -61,29 +66,31 @@ namespace DotNetPlugin
 
         public PluginSession() : this(CreatePlugin()) { }
 
+#if ALLOW_UNLOADING
         public void Dispose() => Stop();
 
-#if ALLOW_UNLOADING
         // https://stackoverflow.com/questions/2410221/appdomain-and-marshalbyrefobject-life-time-how-to-avoid-remotingexception
         public override object InitializeLifetimeService() => null;
 #endif
 
-        public int PluginVersion => _plugin.PluginVersion;
-        public string PluginName => _plugin.PluginName;
         public int PluginHandle
         {
             get => _plugin.PluginHandle;
             set => _plugin.PluginHandle = value;
         }
 
-        public bool Init() => _plugin.Init();
+        public bool Init() => _plugin.InitInternal();
         public void Setup(in Plugins.PLUG_SETUPSTRUCT setupStruct) => _plugin.Setup(setupStruct);
         public bool Stop()
         {
+#if ALLOW_UNLOADING
             var plugin = Interlocked.Exchange(ref _plugin, PluginBase.Null);
 
             if (plugin == PluginBase.Null)
                 return true;
+#else
+            var plugin = _plugin;
+#endif
 
             return plugin.Stop();
         }

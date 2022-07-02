@@ -10,9 +10,12 @@ namespace DotNetPlugin.NativeBindings.SDK
     {
         public const int PLUG_SDKVERSION = 1;
 
-        public delegate bool CBPLUGINCOMMAND(int argc, string[] argv);
-
         public delegate void CBPLUGIN(CBTYPE cbType, IntPtr callbackInfo);
+
+        public delegate bool CBPLUGINCOMMAND(string[] args);
+
+        public delegate nuint CBPLUGINEXPRFUNCTION(nuint[] args, object userdata);
+        public delegate nuint CBPLUGINEXPRFUNCTION_RAWARGS(int argc, IntPtr argv, object userdata);
 
 #if AMD64
         private const string dll = "x64dbg.dll";
@@ -21,11 +24,17 @@ namespace DotNetPlugin.NativeBindings.SDK
 #endif
         private const CallingConvention cdecl = CallingConvention.Cdecl;
 
+        #region Logging
+
         [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
         public static extern void _plugin_logprint([MarshalAs(UnmanagedType.LPUTF8Str)] string text);
 
         [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
         public static extern void _plugin_logputs([MarshalAs(UnmanagedType.LPUTF8Str)] string text);
+
+        #endregion
+
+        #region Callbacks
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void CBPLUGIN_NATIVE(CBTYPE cbType, IntPtr callbackInfo);
@@ -83,14 +92,9 @@ namespace DotNetPlugin.NativeBindings.SDK
             }
         }
 
-        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
-        public static extern bool _plugin_menuaddentry(int hMenu, int hEntry, [MarshalAs(UnmanagedType.LPUTF8Str)] string title);
+        #endregion
 
-        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
-        public static extern int _plugin_menuadd(int hMenu, [MarshalAs(UnmanagedType.LPUTF8Str)] string title);
-
-        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
-        public static extern bool _plugin_menuclear(int hMenu);
+        #region Commands
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate bool CBPLUGINCOMMAND_NATIVE(int argc, IntPtr argv);
@@ -112,11 +116,17 @@ namespace DotNetPlugin.NativeBindings.SDK
             {
                 try
                 {
-                    var argvArray = new string[argc];
-                    for (int i = 0, ofs = 0; i < argvArray.Length; i++, ofs += IntPtr.Size)
-                        argvArray[i] = Marshal.ReadIntPtr(argv, ofs).MarshalToStringUTF8();
+                    string[] argvArray;
+                    if (argc > 0)
+                    {
+                        argvArray = new string[argc];
+                        for (int i = 0, ofs = 0; i < argvArray.Length; i++, ofs += IntPtr.Size)
+                            argvArray[i] = Marshal.ReadIntPtr(argv, ofs).MarshalToStringUTF8();
+                    }
+                    else
+                        argvArray = Array.Empty<string>();
 
-                    return cbCommand(argc, argvArray);
+                    return cbCommand(argvArray);
                 }
                 catch (Exception ex)
                 {
@@ -155,6 +165,151 @@ namespace DotNetPlugin.NativeBindings.SDK
                 return success;
             }
         }
+
+        #endregion
+
+        #region Expression Functions
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate nuint CBPLUGINEXPRFUNCTION_NATIVE(int argc, IntPtr argv, IntPtr userdata);
+
+        private static Dictionary<string, (CBPLUGINEXPRFUNCTION_NATIVE, GCHandle)> _expressionFunctionCallbacks = new Dictionary<string, (CBPLUGINEXPRFUNCTION_NATIVE, GCHandle)>();
+
+        [DllImport(dll, CallingConvention = cdecl, EntryPoint = nameof(_plugin_registerexprfunction), ExactSpelling = true)]
+        private static extern bool _plugin_registerexprfunction_native(int pluginHandle, [MarshalAs(UnmanagedType.LPUTF8Str)] string name, int argc,
+            CBPLUGINEXPRFUNCTION_NATIVE cbCommand, IntPtr userdata);
+
+        private static bool _plugin_registerexprfunction_core(int pluginHandle, string name, int argc, CBPLUGINEXPRFUNCTION_NATIVE callback, object userdata)
+        {
+            var userdataHandle = userdata != null ? GCHandle.Alloc(userdata) : default;
+            try
+            {
+                lock (_expressionFunctionCallbacks)
+                {
+                    // The CLR protects the delegate from being GC'd only for the duration of the call, so we need to keep a reference to it until unregistration.
+                    var success = _plugin_registerexprfunction_native(pluginHandle, name, argc, callback, GCHandle.ToIntPtr(userdataHandle));
+
+                    if (success)
+                        _expressionFunctionCallbacks[name] = (callback, userdataHandle);
+
+                    return success;
+                }
+            }
+            catch
+            {
+                if (userdataHandle.IsAllocated)
+                    userdataHandle.Free();
+                throw;
+            }
+        }
+
+        public static bool _plugin_registerexprfunction(int pluginHandle, string name, int argc, CBPLUGINEXPRFUNCTION cbFunction, object userdata)
+        {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            if (cbFunction == null)
+                throw new ArgumentNullException(nameof(cbFunction));
+
+            CBPLUGINEXPRFUNCTION_NATIVE callback = (argc, argv, userdata) =>
+            {
+                try
+                {
+                    nuint[] argvArray;
+                    if (argc > 0)
+                    {
+                        argvArray = new nuint[argc];
+                        for (int i = 0, ofs = 0; i < argvArray.Length; i++, ofs += IntPtr.Size)
+                            argvArray[i] = (nuint)(nint)Marshal.ReadIntPtr(argv, ofs);
+                    }
+                    else
+                        argvArray = Array.Empty<nuint>();
+
+                    object userdataObj = userdata != IntPtr.Zero ? GCHandle.FromIntPtr(userdata) : null;
+                    return cbFunction(argvArray, userdataObj);
+                }
+                catch (Exception ex)
+                {
+                    PluginMain.LogUnhandledException(ex);
+                    return default;
+                }
+            };
+
+            return _plugin_registerexprfunction_core(pluginHandle, name, argc, callback, userdata);
+        }
+
+        public static bool _plugin_registerexprfunction(int pluginHandle, string name, int argc, CBPLUGINEXPRFUNCTION_RAWARGS cbFunction, object userdata)
+        {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            if (cbFunction == null)
+                throw new ArgumentNullException(nameof(cbFunction));
+
+            CBPLUGINEXPRFUNCTION_NATIVE callback = (argc, argv, userdata) =>
+            {
+                try
+                {
+                    object userdataObj = userdata != IntPtr.Zero ? GCHandle.FromIntPtr(userdata) : null;
+                    return cbFunction(argc, argv, userdataObj);
+                }
+                catch (Exception ex)
+                {
+                    PluginMain.LogUnhandledException(ex);
+                    return default;
+                }
+            };
+
+            return _plugin_registerexprfunction_core(pluginHandle, name, argc, callback, userdata);
+        }
+
+        [DllImport(dll, CallingConvention = cdecl, EntryPoint = nameof(_plugin_unregisterexprfunction), ExactSpelling = true)]
+        private static extern bool _plugin_unregisterexprfunction_native(int pluginHandle, [MarshalAs(UnmanagedType.LPUTF8Str)] string name);
+
+        public static bool _plugin_unregisterexprfunction(int pluginHandle, string name)
+        {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            lock (_expressionFunctionCallbacks)
+            {
+                var success = _plugin_unregisterexprfunction_native(pluginHandle, name);
+
+                if (success)
+                {
+                    if (_expressionFunctionCallbacks.TryGetValue(name, out var callbackInfo))
+                    {
+                        if (callbackInfo.Item2.IsAllocated)
+                            callbackInfo.Item2.Free();
+
+                        _expressionFunctionCallbacks.Remove(name);
+                    }
+                }
+
+                return success;
+            }
+        }
+
+        #endregion
+
+        #region Menu
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern bool _plugin_menuaddentry(int hMenu, int hEntry, [MarshalAs(UnmanagedType.LPUTF8Str)] string title);
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern int _plugin_menuadd(int hMenu, [MarshalAs(UnmanagedType.LPUTF8Str)] string title);
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern bool _plugin_menuremove(int hMenu);
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern bool _plugin_menuentryremove(int pluginHandle, int hEntry);
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern bool _plugin_menuclear(int hMenu);
+
+        #endregion
 
         [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
         public static extern void _plugin_debugskipexceptions(bool skip);

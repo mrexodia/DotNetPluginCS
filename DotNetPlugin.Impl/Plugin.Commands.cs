@@ -9,31 +9,33 @@ using Microsoft.VisualBasic.CompilerServices;
 
 namespace DotNetPlugin
 {
-    public static class RegisteredCommands
+    partial class Plugin
     {
-        public static bool cbNetTestCommand(int argc, string[] argv)
+        [Command("DotNetpluginTestCommand")]
+        public static bool cbNetTestCommand(string[] args)
         {
-            Console.WriteLine($"[{Plugin.PluginLogName}] .Net test command!");
+            Console.WriteLine(".Net test command!");
             string empty = string.Empty;
             string Left = Interaction.InputBox("Enter value pls", "NetTest", "", -1, -1);
             if (Left == null | Operators.CompareString(Left, "", false) == 0)
-                Console.WriteLine($"[{Plugin.PluginLogName}] cancel pressed!");
+                Console.WriteLine("cancel pressed!");
             else
-                Console.WriteLine($"[{Plugin.PluginLogName}] line: {Left}");
+                Console.WriteLine($"line: {Left}");
             return true;
         }
 
-        public static bool cbDumpProcessCommand(int argc, string[] argv)
+        [Command("DotNetDumpProcess")]
+        public static bool cbDumpProcessCommand(string[] args)
         {
-            var addr = argc >= 2 ? Bridge.DbgValFromString(argv[1]) : Bridge.DbgValFromString("cip");
-            Console.WriteLine($"[{Plugin.PluginLogName}] addr: {addr.ToPtrString()}");
+            var addr = args.Length >= 2 ? Bridge.DbgValFromString(args[1]) : Bridge.DbgValFromString("cip");
+            Console.WriteLine($"addr: {addr.ToPtrString()}");
             var modinfo = new Module.ModuleInfo();
             if (!Module.InfoFromAddr(addr, ref modinfo))
             {
-                Console.WriteLine($"[{Plugin.PluginLogName}] Module.InfoFromAddr failed...");
+                Console.Error.WriteLine($"Module.InfoFromAddr failed...");
                 return false;
             }
-            Console.WriteLine($"[{Plugin.PluginLogName}] InfoFromAddr success, base: {modinfo.@base.ToPtrString()}");
+            Console.WriteLine($"InfoFromAddr success, base: {modinfo.@base.ToPtrString()}");
             var hProcess = Bridge.DbgValFromString("$hProcess");
             var saveFileDialog = new SaveFileDialog
             {
@@ -53,22 +55,23 @@ namespace DotNetPlugin
                     string fileName = saveFileDialog.FileName;
                     if (!TitanEngine.DumpProcess((nint)hProcess, (nint)modinfo.@base, fileName, addr))
                     {
-                        Console.WriteLine($"[{Plugin.PluginLogName}] DumpProcess failed...");
+                        Console.Error.WriteLine($"DumpProcess failed...");
                         return false;
                     }
-                    Console.WriteLine($"[{Plugin.PluginLogName}] Dumping done!");
+                    Console.WriteLine($"Dumping done!");
                 }
             }
             return true;
         }
 
-        public static bool cbModuleEnum(int argc, string[] argv)
+        [Command("DotNetModuleEnum")]
+        public static bool cbModuleEnum(string[] args)
         {
             foreach (var mod in Module.GetList())
             {
-                Console.WriteLine($"[{Plugin.PluginLogName}] {mod.@base.ToPtrString()} {mod.name}");
+                Console.WriteLine($"{mod.@base.ToPtrString()} {mod.name}");
                 foreach (var section in Module.SectionListFromAddr(mod.@base))
-                    Console.WriteLine($"[{Plugin.PluginLogName}]    {section.addr.ToPtrString()} \"{section.name}\"");
+                    Console.WriteLine($"    {section.addr.ToPtrString()} \"{section.name}\"");
             }
             return true;
         }
