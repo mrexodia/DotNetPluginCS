@@ -5,6 +5,18 @@ namespace DotNetPlugin
 {
     partial class Plugin
     {
+        public void RegisterCallbacks()
+        {
+            // Plugins._plugin_registercallback(PluginHandle, Plugins.CBTYPE.CB_INITDEBUG, (cbType, info) => OnInitDebug(in info.ToStructUnsafe<Plugins.PLUG_CB_INITDEBUG>()));
+            // Plugins._plugin_registercallback(PluginHandle, Plugins.CBTYPE.CB_STOPDEBUG, (cbType, info) => OnStopDebug(in info.ToStructUnsafe<Plugins.PLUG_CB_STOPDEBUG>()));
+        }
+
+        public void UnregisterCallbacks()
+        {
+            // Plugins._plugin_unregistercallback(PluginHandle, Plugins.CBTYPE.CB_INITDEBUG);
+            // Plugins._plugin_unregistercallback(PluginHandle, Plugins.CBTYPE.CB_STOPDEBUG);
+        }
+
         public override void OnInitDebug(in Plugins.PLUG_CB_INITDEBUG info)
         {
             var szFileName = info.szFileName;
