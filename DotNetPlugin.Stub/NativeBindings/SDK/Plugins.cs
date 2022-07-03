@@ -343,11 +343,14 @@ namespace DotNetPlugin.NativeBindings.SDK
         [Serializable]
         public struct PLUG_SETUPSTRUCT
         {
-            public IntPtr hwndDlg;
-            public int hMenu;
-            public int hMenuDisasm;
-            public int hMenuDump;
-            public int hMenuStack;
+            public IntPtr hwndDlg; //gui window handle
+            public int hMenu; //plugin menu handle
+            public int hMenuDisasm; //plugin disasm menu handle
+            public int hMenuDump; //plugin dump menu handle
+            public int hMenuStack; //plugin stack menu handle
+            public int hMenuGraph; //plugin graph menu handle
+            public int hMenuMemmap; //plugin memory map menu handle
+            public int hMenuSymmod; //plugin symbol module menu handle
         }
 
         public enum CBTYPE
@@ -395,39 +398,58 @@ namespace DotNetPlugin.NativeBindings.SDK
         }
 
         [Serializable]
-        public struct PLUG_CB_STOPDEBUG
-        {
-            public IntPtr reserved;
-        }
-
-        [Serializable]
         public struct PLUG_CB_CREATEPROCESS
         {
             private IntPtr CreateProcessInfoPtr; //WAPI.CREATE_PROCESS_DEBUG_INFO
-            public CREATE_PROCESS_DEBUG_INFO? CreateProcessInfo => CreateProcessInfoPtr.ToStruct<CREATE_PROCESS_DEBUG_INFO>();
+            public StructRef<CREATE_PROCESS_DEBUG_INFO> CreateProcessInfo => new StructRef<CREATE_PROCESS_DEBUG_INFO>(CreateProcessInfoPtr);
 
             private IntPtr modInfoPtr; //WAPI.IMAGEHLP_MODULE64
+            public bool modInfoPresent => modInfoPtr != IntPtr.Zero;
             public IMAGEHLP_MODULE64? modInfo => modInfoPtr.ToStruct<IMAGEHLP_MODULE64>();
 
             private IntPtr DebugFileNamePtr; //string
             public string DebugFileName => DebugFileNamePtr.MarshalToStringUTF8();
 
             private IntPtr fdProcessInfoPtr; //WAPI.PROCESS_INFORMATION
-            public PROCESS_INFORMATION? fdProcessInfo => fdProcessInfoPtr.ToStruct<PROCESS_INFORMATION>();
+            public StructRef<PROCESS_INFORMATION> fdProcessInfo => new StructRef<PROCESS_INFORMATION>(fdProcessInfoPtr);
         }
 
         [Serializable]
         public struct PLUG_CB_EXITPROCESS
         {
             private IntPtr ExitProcessPtr;
-            public EXIT_PROCESS_DEBUG_INFO? fdProcessInfo => ExitProcessPtr.ToStruct<EXIT_PROCESS_DEBUG_INFO>();
+            public StructRef<EXIT_PROCESS_DEBUG_INFO> ExitProcess => new StructRef<EXIT_PROCESS_DEBUG_INFO>(ExitProcessPtr);
+        }
+
+        [Serializable]
+        public struct PLUG_CB_CREATETHREAD
+        {
+            private IntPtr CreateThreadPtr;
+            public StructRef<CREATE_THREAD_DEBUG_INFO> CreateThread => new StructRef<CREATE_THREAD_DEBUG_INFO>(CreateThreadPtr);
+
+            public uint dwThreadId;
+        }
+
+        [Serializable]
+        public struct PLUG_CB_EXITTHREAD
+        {
+            private IntPtr ExitThreadPtr;
+            public StructRef<EXIT_THREAD_DEBUG_INFO> ExitThread => new StructRef<EXIT_THREAD_DEBUG_INFO>(ExitThreadPtr);
+
+            public uint dwThreadId;
+        }
+
+        [Serializable]
+        public struct PLUG_CB_SYSTEMBREAKPOINT
+        {
+            public IntPtr reserved;
         }
 
         [Serializable]
         public struct PLUG_CB_LOADDLL
         {
             private IntPtr LoadDllPtr; //WAPI.LOAD_DLL_DEBUG_INFO
-            public LOAD_DLL_DEBUG_INFO? LoadDll => LoadDllPtr.ToStruct<LOAD_DLL_DEBUG_INFO>();
+            public StructRef<LOAD_DLL_DEBUG_INFO> LoadDll => new StructRef<LOAD_DLL_DEBUG_INFO>(LoadDllPtr);
 
             private IntPtr modInfoPtr; //WAPI.IMAGEHLP_MODULE64
             public IMAGEHLP_MODULE64? modInfo => modInfoPtr.ToStruct<IMAGEHLP_MODULE64>();
@@ -437,17 +459,69 @@ namespace DotNetPlugin.NativeBindings.SDK
         }
 
         [Serializable]
+        public struct PLUG_CB_UNLOADDLL
+        {
+            private IntPtr UnloadDllPtr;
+            public StructRef<UNLOAD_DLL_DEBUG_INFO> UnloadDll => new StructRef<UNLOAD_DLL_DEBUG_INFO>(UnloadDllPtr);
+        }
+
+        [Serializable]
+        public struct PLUG_CB_OUTPUTDEBUGSTRING
+        {
+            private IntPtr DebugStringPtr;
+            public StructRef<OUTPUT_DEBUG_STRING_INFO> DebugString => new StructRef<OUTPUT_DEBUG_STRING_INFO>(DebugStringPtr);
+        }
+
+        [Serializable]
         public struct PLUG_CB_EXCEPTION
         {
             private IntPtr ExceptionPtr;
-            public EXCEPTION_DEBUG_INFO? Exception => ExceptionPtr.ToStruct<EXCEPTION_DEBUG_INFO>();
+            public StructRef<EXCEPTION_DEBUG_INFO> Exception => new StructRef<EXCEPTION_DEBUG_INFO>(ExceptionPtr);
+        }
+
+        [Serializable]
+        public struct PLUG_CB_BREAKPOINT
+        {
+            // TODO: add definition for struct BRIDGEBP
+            public IntPtr breakpoint;
+        }
+
+        [Serializable]
+        public struct PLUG_CB_PAUSEDEBUG
+        {
+            public IntPtr reserved;
+        }
+
+        [Serializable]
+        public struct PLUG_CB_RESUMEDEBUG
+        {
+            public IntPtr reserved;
+        }
+
+        [Serializable]
+        public struct PLUG_CB_STEPPED
+        {
+            public IntPtr reserved;
+        }
+
+        [Serializable]
+        public struct PLUG_CB_ATTACH
+        {
+            public uint dwProcessId;
+        }
+
+        [Serializable]
+        public struct PLUG_CB_DETACH
+        {
+            private IntPtr fdProcessInfoPtr;
+            public StructRef<PROCESS_INFORMATION> fdProcessInfo => new StructRef<PROCESS_INFORMATION>(fdProcessInfoPtr);
         }
 
         [Serializable]
         public struct PLUG_CB_DEBUGEVENT
         {
             private IntPtr DebugEventPtr;
-            public DEBUG_EVENT? DebugEvent => DebugEventPtr.ToStruct<DEBUG_EVENT>();
+            public StructRef<DEBUG_EVENT> DebugEvent => new StructRef<DEBUG_EVENT>(DebugEventPtr);
         }
 
         [Serializable]
@@ -457,10 +531,122 @@ namespace DotNetPlugin.NativeBindings.SDK
         }
 
         [Serializable]
+        public struct PLUG_CB_WINEVENT
+        {
+            private IntPtr messagePtr;
+            public StructRef<MSG> message => new StructRef<MSG>(messagePtr);
+
+            public IntPtr result;
+
+            private byte retvalByte;
+            public bool retval => Convert.ToBoolean(retvalByte);
+        }
+
+        [Serializable]
+        public struct PLUG_CB_WINEVENTGLOBAL
+        {
+            private IntPtr messagePtr;
+            public StructRef<MSG> message => new StructRef<MSG>(messagePtr);
+
+            private byte retvalByte;
+            public bool retval => Convert.ToBoolean(retvalByte);
+        }
+
+        [Serializable]
+        public struct PLUG_CB_LOADSAVEDB
+        {
+            // TODO: add definition for struct json_t
+            public IntPtr root;
+            public int loadSaveType;
+        }
+
+        [Serializable]
+        public struct PLUG_CB_FILTERSYMBOL
+        {
+            private IntPtr symbolPtr; //string
+            public string symbol => symbolPtr.MarshalToStringUTF8();
+
+            private byte retvalByte;
+            public bool retval => Convert.ToBoolean(retvalByte);
+        }
+
+        [Serializable]
         public struct PLUG_CB_TRACEEXECUTE
         {
             public nuint cip;
-            public bool stop;
+
+            private byte stopByte;
+            public bool stop => Convert.ToBoolean(stopByte);
+        }
+
+        [Serializable]
+        public struct PLUG_CB_SELCHANGED
+        {
+            public int hWindow;
+            public nuint VA;
+        }
+
+        [Serializable]
+        public struct PLUG_CB_ANALYZE
+        {
+            public BridgeBase.BridgeCFGraphList graph;
+        }
+
+        [Serializable]
+        public struct PLUG_CB_ADDRINFO
+        {
+            public nuint addr;
+
+            private IntPtr addrinfoPtr;
+            public StructRef<BridgeBase.BRIDGE_ADDRINFO> addrinfo => new StructRef<BridgeBase.BRIDGE_ADDRINFO>(addrinfoPtr);
+
+            private byte retvalByte;
+            public bool retval => Convert.ToBoolean(retvalByte);
+        }
+
+        [Serializable]
+        public struct PLUG_CB_VALFROMSTRING
+        {
+            private IntPtr stringPtr; //string
+            public string @string => stringPtr.MarshalToStringUTF8();
+
+            public nuint value;
+
+            private IntPtr value_sizePtr;
+            public StructRef<int> value_size => new StructRef<int>(value_sizePtr);
+
+            private IntPtr isvarPtr;
+            public StructRef<byte> isvar => new StructRef<byte>(isvarPtr);
+
+            private IntPtr hexonlyPtr;
+            public StructRef<byte> hexonly => new StructRef<byte>(hexonlyPtr);
+
+            private byte retvalByte;
+            public bool retval => Convert.ToBoolean(retvalByte);
+        }
+
+        [Serializable]
+        public struct PLUG_CB_VALTOSTRING
+        {
+            private IntPtr stringPtr; //string
+            public string @string => stringPtr.MarshalToStringUTF8();
+
+            public nuint value;
+
+            private byte retvalByte;
+            public bool retval => Convert.ToBoolean(retvalByte);
+        }
+
+        [Serializable]
+        public struct PLUG_CB_MENUPREPARE
+        {
+            public BridgeBase.GUIMENUTYPE hMenu;
+        }
+
+        [Serializable]
+        public struct PLUG_CB_STOPDEBUG
+        {
+            public IntPtr reserved;
         }
     }
 }

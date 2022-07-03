@@ -4,6 +4,25 @@ using System.Runtime.InteropServices;
 namespace DotNetPlugin.NativeBindings.Win32
 {
 #pragma warning disable 0649
+    
+    [Serializable]
+    public struct MSG
+    {
+        public IntPtr hwnd;
+        public uint message;
+        public UIntPtr wParam;
+        public IntPtr lParam;
+        public uint time;
+        public POINT pt;
+        public uint lPrivate;
+    }
+
+    [Serializable]
+    public struct POINT
+    {
+        public int X;
+        public int Y;
+    }
 
     [Serializable]
     public struct IMAGEHLP_MODULE64

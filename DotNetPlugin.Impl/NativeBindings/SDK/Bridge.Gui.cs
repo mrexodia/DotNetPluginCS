@@ -1,11 +1,10 @@
 ﻿using System;
-using System.IO;
 using System.Runtime.InteropServices;
 
 namespace DotNetPlugin.NativeBindings.SDK
 {
     // https://github.com/x64dbg/x64dbg/blob/development/src/bridge/bridgemain.h
-    public static partial class Bridge
+    partial class Bridge
     {
         public const int GUI_MAX_LINE_SIZE = 65536;
 
