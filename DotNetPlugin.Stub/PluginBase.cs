@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using DotNetPlugin.NativeBindings;
 using DotNetPlugin.NativeBindings.SDK;
+using DotNetPlugin.NativeBindings.Win32;
 
 namespace DotNetPlugin
 {
@@ -28,10 +28,13 @@ namespace DotNetPlugin
         IDisposable _commandRegistrations;
         IDisposable _expressionFunctionRegistrations;
         IDisposable _eventCallbackRegistrations;
+        Menus _menus;
 
         protected PluginBase() { }
 
+        protected object MenusSyncObj => _menus;
         public int PluginHandle { get; internal set; }
+        public Win32Window HostWindow { get; private set; }
 
         internal bool InitInternal()
         {
@@ -40,11 +43,28 @@ namespace DotNetPlugin
             _commandRegistrations = Commands.Initialize(this, pluginMethods);
             _expressionFunctionRegistrations = ExpressionFunctions.Initialize(this, pluginMethods);
             _eventCallbackRegistrations = EventCallbacks.Initialize(this, pluginMethods);
-
             return Init();
         }
 
         public virtual bool Init() => true;
+
+        protected virtual void SetupMenu(Menus menus) { }
+
+        internal void SetupInternal(in Plugins.PLUG_SETUPSTRUCT setupStruct)
+        {
+            HostWindow = new Win32Window(setupStruct.hwndDlg);
+
+            _menus = new Menus(PluginHandle, in setupStruct);
+
+            try { SetupMenu(_menus); }
+            catch (MenuException ex)
+            {
+                LogError($"Registration of menu failed. {ex.Message}");
+                _menus.Clear();
+            }
+
+            Setup(in setupStruct);
+        }
 
         public virtual void Setup(in Plugins.PLUG_SETUPSTRUCT setupStruct) { }
 
@@ -66,6 +86,7 @@ namespace DotNetPlugin
             }
             finally
             {
+                _menus.Dispose();
                 _eventCallbackRegistrations.Dispose();
                 _expressionFunctionRegistrations.Dispose();
                 _commandRegistrations.Dispose();
@@ -76,7 +97,14 @@ namespace DotNetPlugin
 
         public virtual Task<bool> StopAsync() => Task.FromResult(true);
 
-        //public virtual void OnInitDebug(in Plugins.PLUG_CB_INITDEBUG info) { }
-        //public virtual void OnStopDebug(in Plugins.PLUG_CB_STOPDEBUG info) { }
+        void IPlugin.OnMenuEntry(in Plugins.PLUG_CB_MENUENTRY info)
+        {
+            MenuItem menuItem;
+            lock (MenusSyncObj)
+            {
+                menuItem = _menus.GetMenuItemById(info.hEntry);
+            }
+            menuItem?.Handler(menuItem);
+        }
     }
 }

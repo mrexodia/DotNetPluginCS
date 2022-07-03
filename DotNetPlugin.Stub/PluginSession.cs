@@ -80,7 +80,7 @@ namespace DotNetPlugin
         }
 
         public bool Init() => _plugin.InitInternal();
-        public void Setup(in Plugins.PLUG_SETUPSTRUCT setupStruct) => _plugin.Setup(setupStruct);
+        public void Setup(in Plugins.PLUG_SETUPSTRUCT setupStruct) => _plugin.SetupInternal(in setupStruct);
         public bool Stop()
         {
 #if ALLOW_UNLOADING
@@ -95,10 +95,7 @@ namespace DotNetPlugin
             return plugin.Stop();
         }
 
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //public void OnInitDebug(in Plugins.PLUG_CB_INITDEBUG info) => _plugin.OnInitDebug(in info);
-
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //public void OnStopDebug(in Plugins.PLUG_CB_STOPDEBUG info) => _plugin.OnStopDebug(in info);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void OnMenuEntry(in Plugins.PLUG_CB_MENUENTRY info) => ((IPlugin)_plugin).OnMenuEntry(in info);
     }
 }
