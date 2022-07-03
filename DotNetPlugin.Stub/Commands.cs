@@ -27,9 +27,23 @@ namespace DotNetPlugin
 
     internal static class Commands
     {
-        private static Plugins.CBPLUGINCOMMAND BuildCallback(PluginBase plugin, MethodInfo method)
+        private static Plugins.CBPLUGINCOMMAND BuildCallback(PluginBase plugin, MethodInfo method, bool reportsSuccess)
         {
-            return (Plugins.CBPLUGINCOMMAND)Delegate.CreateDelegate(typeof(Plugins.CBPLUGINCOMMAND), method.IsStatic ? null : plugin, method, throwOnBindFailure: true);
+            object firstArg = method.IsStatic ? null : plugin;
+
+            if (reportsSuccess)
+            {
+                return (Plugins.CBPLUGINCOMMAND)Delegate.CreateDelegate(typeof(Plugins.CBPLUGINCOMMAND), firstArg, method, throwOnBindFailure: true);
+            }
+            else
+            {
+                var callback = (Action<string[]>)Delegate.CreateDelegate(typeof(Action<string[]>), firstArg, method, throwOnBindFailure: true);
+                return args =>
+                {
+                    callback(args);
+                    return true;
+                };
+            }
         }
 
         public static IDisposable Initialize(PluginBase plugin, MethodInfo[] pluginMethods)
@@ -44,7 +58,8 @@ namespace DotNetPlugin
             {
                 var name = attribute.Name ?? method.Name;
 
-                if (method.ReturnType != typeof(bool))
+                var reportsSuccess = method.ReturnType == typeof(bool);
+                if (!reportsSuccess && method.ReturnType != typeof(void))
                 {
                     PluginBase.LogError($"Registration of command '{name}' is skipped. Method '{method.Name}' has an invalid return type.");
                     continue;
@@ -52,15 +67,14 @@ namespace DotNetPlugin
 
                 var methodParams = method.GetParameters();
 
-                if (methodParams.Length == 1 ? methodParams[0].ParameterType != typeof(string[]) :
-                    methodParams.Length == 2 && (methodParams[0].ParameterType != typeof(int) || methodParams[1].ParameterType != typeof(string[])))
+                if (methodParams.Length != 1 || methodParams[0].ParameterType != typeof(string[]))
                 {
                     PluginBase.LogError($"Registration of command '{name}' is skipped. Method '{method.Name}' has an invalid signature.");
                     continue;
                 }
 
                 if (registeredNames.Contains(name) ||
-                    !Plugins._plugin_registercommand(plugin.PluginHandle, name, BuildCallback(plugin, method), attribute.DebugOnly))
+                    !Plugins._plugin_registercommand(plugin.PluginHandle, name, BuildCallback(plugin, method, reportsSuccess), attribute.DebugOnly))
                 {
                     PluginBase.LogError($"Registration of command '{name}' failed.");
                     continue;

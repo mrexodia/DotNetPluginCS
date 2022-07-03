@@ -12,7 +12,7 @@ namespace DotNetPlugin
     partial class Plugin
     {
         [Command("DotNetpluginTestCommand")]
-        public static bool cbNetTestCommand(string[] args)
+        public static void cbNetTestCommand(string[] args)
         {
             Console.WriteLine(".Net test command!");
             string empty = string.Empty;
@@ -21,10 +21,9 @@ namespace DotNetPlugin
                 Console.WriteLine("cancel pressed!");
             else
                 Console.WriteLine($"line: {Left}");
-            return true;
         }
 
-        [Command("DotNetDumpProcess")]
+        [Command("DotNetDumpProcess", DebugOnly = true)]
         public static bool cbDumpProcessCommand(string[] args)
         {
             var addr = args.Length >= 2 ? Bridge.DbgValFromString(args[1]) : Bridge.DbgValFromString("cip");
@@ -64,8 +63,8 @@ namespace DotNetPlugin
             return true;
         }
 
-        [Command("DotNetModuleEnum")]
-        public static bool cbModuleEnum(string[] args)
+        [Command("DotNetModuleEnum", DebugOnly = true)]
+        public static void cbModuleEnum(string[] args)
         {
             foreach (var mod in Module.GetList())
             {
@@ -73,7 +72,6 @@ namespace DotNetPlugin
                 foreach (var section in Module.SectionListFromAddr(mod.@base))
                     Console.WriteLine($"    {section.addr.ToPtrString()} \"{section.name}\"");
             }
-            return true;
         }
     }
 }
