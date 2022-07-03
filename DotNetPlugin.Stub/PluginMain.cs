@@ -11,7 +11,7 @@ namespace DotNetPlugin
     /// <summary>
     /// Contains entry points for plugin lifecycle and debugger event callbacks.
     /// </summary>
-    internal class PluginMain
+    internal static class PluginMain
     {
 #if ALLOW_UNLOADING
         private static readonly Lazy<IPluginSession> NullSession = new Lazy<IPluginSession>(() => PluginSession.Null, LazyThreadSafetyMode.PublicationOnly);
@@ -249,6 +249,9 @@ namespace DotNetPlugin
 #if ALLOW_UNLOADING
             Plugins._plugin_unregistercommand(s_pluginHandle, s_controlCommand);
 #endif
+
+            s_setupStruct = default;
+            s_pluginHandle = default;
 
             return success;
         }

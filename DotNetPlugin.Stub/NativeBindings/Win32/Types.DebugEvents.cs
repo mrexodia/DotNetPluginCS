@@ -14,22 +14,31 @@ namespace DotNetPlugin.NativeBindings.Win32
         public uint ExceptionFlags;
 
         private IntPtr ExceptionRecordPtr;
-        public EXCEPTION_RECORD? ExceptionRecord => ExceptionRecordPtr.ToStruct<EXCEPTION_RECORD>();
+        public StructRef<EXCEPTION_RECORD> ExceptionRecord => new StructRef<EXCEPTION_RECORD>(ExceptionRecordPtr);
 
         public IntPtr ExceptionAddress;
         public uint NumberParameters;
 
+#if AMD64
+        private fixed ulong ExceptionInformationFixed[EXCEPTION_MAXIMUM_PARAMETERS];
+#else
         private fixed uint ExceptionInformationFixed[EXCEPTION_MAXIMUM_PARAMETERS];
-        public uint[] GetExceptionInformation(uint[] array)
+#endif
+
+        public UIntPtr[] GetExceptionInformation(UIntPtr[] array)
         {
             if (array == null)
-                array = new uint[EXCEPTION_MAXIMUM_PARAMETERS];
+                array = new UIntPtr[EXCEPTION_MAXIMUM_PARAMETERS];
 
-            fixed (uint* ptr = ExceptionInformationFixed)
+#if AMD64
+        fixed (ulong* ptr = ExceptionInformationFixed)
+#else
+        fixed (uint* ptr = ExceptionInformationFixed)
+#endif
             {
                 var p = ptr;
                 for (int i = 0, n = Math.Min(array.Length, EXCEPTION_MAXIMUM_PARAMETERS); i < n; i++, p++)
-                    array[i] = *p;
+                    array[i] = new UIntPtr(*p);
             }
 
             return array;
