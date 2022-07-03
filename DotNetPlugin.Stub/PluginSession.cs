@@ -95,19 +95,10 @@ namespace DotNetPlugin
             return plugin.Stop();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void OnInitDebug(in Plugins.PLUG_CB_INITDEBUG info) => _plugin.OnInitDebug(in info);
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public void OnInitDebug(in Plugins.PLUG_CB_INITDEBUG info) => _plugin.OnInitDebug(in info);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void OnStopDebug(in Plugins.PLUG_CB_STOPDEBUG info) => _plugin.OnStopDebug(in info);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void OnCreateProcess(in Plugins.PLUG_CB_CREATEPROCESS info) => _plugin.OnCreateProcess(in info);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void OnLoadDll(in Plugins.PLUG_CB_LOADDLL info) => _plugin.OnLoadDll(in info);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void OnMenuEntry(in Plugins.PLUG_CB_MENUENTRY info) => _plugin.OnMenuEntry(in info);
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public void OnStopDebug(in Plugins.PLUG_CB_STOPDEBUG info) => _plugin.OnStopDebug(in info);
     }
 }

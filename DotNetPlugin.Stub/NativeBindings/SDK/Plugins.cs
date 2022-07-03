@@ -34,7 +34,7 @@ namespace DotNetPlugin.NativeBindings.SDK
 
         #endregion
 
-        #region Callbacks
+        #region Event Callbacks
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void CBPLUGIN_NATIVE(CBTYPE cbType, IntPtr callbackInfo);

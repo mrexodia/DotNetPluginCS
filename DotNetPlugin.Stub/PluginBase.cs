@@ -27,6 +27,7 @@ namespace DotNetPlugin
 
         IDisposable _commandRegistrations;
         IDisposable _expressionFunctionRegistrations;
+        IDisposable _eventCallbackRegistrations;
 
         protected PluginBase() { }
 
@@ -38,6 +39,7 @@ namespace DotNetPlugin
 
             _commandRegistrations = Commands.Initialize(this, pluginMethods);
             _expressionFunctionRegistrations = ExpressionFunctions.Initialize(this, pluginMethods);
+            _eventCallbackRegistrations = EventCallbacks.Initialize(this, pluginMethods);
 
             return Init();
         }
@@ -64,8 +66,9 @@ namespace DotNetPlugin
             }
             finally
             {
-                _commandRegistrations.Dispose();
+                _eventCallbackRegistrations.Dispose();
                 _expressionFunctionRegistrations.Dispose();
+                _commandRegistrations.Dispose();
             }
 
             return false;
@@ -73,10 +76,7 @@ namespace DotNetPlugin
 
         public virtual Task<bool> StopAsync() => Task.FromResult(true);
 
-        public virtual void OnInitDebug(in Plugins.PLUG_CB_INITDEBUG info) { }
-        public virtual void OnStopDebug(in Plugins.PLUG_CB_STOPDEBUG info) { }
-        public virtual void OnCreateProcess(in Plugins.PLUG_CB_CREATEPROCESS info) { }
-        public virtual void OnLoadDll(in Plugins.PLUG_CB_LOADDLL info) { }
-        public virtual void OnMenuEntry(in Plugins.PLUG_CB_MENUENTRY info) { }
+        //public virtual void OnInitDebug(in Plugins.PLUG_CB_INITDEBUG info) { }
+        //public virtual void OnStopDebug(in Plugins.PLUG_CB_STOPDEBUG info) { }
     }
 }

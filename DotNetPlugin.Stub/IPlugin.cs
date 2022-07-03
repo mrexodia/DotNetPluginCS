@@ -13,10 +13,7 @@ namespace DotNetPlugin
         void Setup(in Plugins.PLUG_SETUPSTRUCT setupStruct);
         bool Stop();
 
-        void OnInitDebug(in Plugins.PLUG_CB_INITDEBUG info);
-        void OnStopDebug(in Plugins.PLUG_CB_STOPDEBUG info);
-        void OnCreateProcess(in Plugins.PLUG_CB_CREATEPROCESS info);
-        void OnLoadDll(in Plugins.PLUG_CB_LOADDLL info);
-        void OnMenuEntry(in Plugins.PLUG_CB_MENUENTRY info);
+        //void OnInitDebug(in Plugins.PLUG_CB_INITDEBUG info);
+        //void OnStopDebug(in Plugins.PLUG_CB_STOPDEBUG info);
     }
 }
