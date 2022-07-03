@@ -26,7 +26,8 @@ namespace DotNetPlugin
             Plugins._plugin_menuremove(_hSubMenu);
         }
 
-        public override void OnMenuEntry(in Plugins.PLUG_CB_MENUENTRY info)
+        [EventCallback(Plugins.CBTYPE.CB_MENUENTRY)]
+        public void OnMenuEntry(in Plugins.PLUG_CB_MENUENTRY info)
         {
             switch (info.hEntry)
             {

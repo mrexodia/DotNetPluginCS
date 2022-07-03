@@ -21,18 +21,12 @@ namespace DotNetPlugin
             LogInfo($"PluginHandle: {PluginHandle}");
 
             // You can listen to debugger events in two ways:
-            // 1. by overriding the On*** methods of the base class or
-            // 2. by manually registering callbacks (see RegisterCallbacks in Plugin.Callbacks.cs).
-
-            // Option 1 works using exported dll functions (see PluginMain) which can be declared only in the Stub project.
-            // You can add new event types by adding the desired dll export to PluginMain, extending the IPlugin interface and implementing the necessary functions.
-            // Option 2, in turn, just registers the specified callbacks directly.
+            // 1. by declaring dll exports in the Stub project (see PluginMain), extending the IPlugin interface, implementing the necessary functions and
+            //    overriding the corresponding On*** methods of the base class or
+            // 2. by registering callbacks using the EventCallback attribute (see Plugin.EventCallbacks.cs).
 
             // Please note that Option 1 goes through remoting in Debug builds (where Impl assembly unloading is enabled),
             // so it may be somewhat slower than Option 2. Release builds don't use remoting, just direct calls, so in that case there should be no significant difference.
-            // However, it's recommended to disable dll exports for unused/manually registered callbacks by commenting them out in PluginMain.
-
-            RegisterCallbacks();
 
             // Commands and function expressions are discovered and registered automatically. See Plugin.Commands.cs and Plugin.ExpressionFunctions.cs.
 
@@ -47,8 +41,6 @@ namespace DotNetPlugin
         public override Task<bool> StopAsync()
         {
             UnregisterMenu();
-
-            UnregisterCallbacks();
 
             return Task.FromResult(true);
         }

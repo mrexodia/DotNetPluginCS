@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -123,6 +124,7 @@ namespace DotNetPlugin.NativeBindings
             return (T)Marshal.PtrToStructure(intPtr, typeof(T));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe ref readonly T ToStructUnsafe<T>(this IntPtr intPtr) where T : unmanaged
         {
             if (intPtr == IntPtr.Zero)
