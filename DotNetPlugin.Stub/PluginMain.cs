@@ -276,16 +276,10 @@ namespace DotNetPlugin
         }
 #endif
 
-        //[DllExport("CBINITDEBUG", CallingConvention.Cdecl)]
-        //public static void CBINITDEBUG(Plugins.CBTYPE cbType, in Plugins.PLUG_CB_INITDEBUG info)
-        //{
-        //    Session.OnInitDebug(in info);
-        //}
-
-        //[DllExport("CBSTOPDEBUG", CallingConvention.Cdecl)]
-        //public static void CBSTOPDEBUG(Plugins.CBTYPE cbType, in Plugins.PLUG_CB_STOPDEBUG info)
-        //{
-        //    Session.OnStopDebug(in info);
-        //}
+        [DllExport("CBMENUENTRY", CallingConvention.Cdecl)]
+        public static void CBMENUENTRY(Plugins.CBTYPE cbType, in Plugins.PLUG_CB_MENUENTRY info)
+        {
+            Session.OnMenuEntry(in info);
+        }
     }
 }

@@ -292,13 +292,40 @@ namespace DotNetPlugin.NativeBindings.SDK
 
         #endregion
 
-        #region Menu
+        #region Menus
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern int _plugin_menuadd(int hMenu, [MarshalAs(UnmanagedType.LPUTF8Str)] string title);
 
         [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
         public static extern bool _plugin_menuaddentry(int hMenu, int hEntry, [MarshalAs(UnmanagedType.LPUTF8Str)] string title);
 
         [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
-        public static extern int _plugin_menuadd(int hMenu, [MarshalAs(UnmanagedType.LPUTF8Str)] string title);
+        public static extern bool _plugin_menuaddseparator(int hMenu);
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern void _plugin_menuseticon(int hMenu, in BridgeBase.ICONDATA icon);
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern void _plugin_menuentryseticon(int pluginHandle, int hEntry, in BridgeBase.ICONDATA icon);
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern void _plugin_menuentrysetchecked(int pluginHandle, int hEntry, bool @checked);
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern void _plugin_menusetvisible(int pluginHandle, int hMenu, bool visible);
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern void _plugin_menuentrysetvisible(int pluginHandle, int hEntry, bool visible);
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern void _plugin_menusetname(int pluginHandle, int hMenu, [MarshalAs(UnmanagedType.LPUTF8Str)] string name);
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern void _plugin_menuentrysetname(int pluginHandle, int hEntry, [MarshalAs(UnmanagedType.LPUTF8Str)] string name);
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern void _plugin_menuentrysethotkey(int pluginHandle, int hEntry, [MarshalAs(UnmanagedType.LPUTF8Str)] string hotkey);
 
         [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
         public static extern bool _plugin_menuremove(int hMenu);

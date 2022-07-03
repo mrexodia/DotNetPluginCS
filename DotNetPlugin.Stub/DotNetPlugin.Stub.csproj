@@ -32,6 +32,10 @@
     </When>
   </Choose>
 
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+
   <!-- Writes the target path of the Impl assembly to file and embeds that file as a resource in the current assembly. -->
 
   <Target Name="GenerateBuildMetadata" BeforeTargets="BeforeBuild" Condition="'$(AllowUnloading)'=='true'">

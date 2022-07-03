@@ -20,6 +20,12 @@
     <DefineConstants>AMD64;$(DefineConstants)</DefineConstants>
     <PluginExt>.dp64</PluginExt>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Resources\abouticon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\abouticon.png" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DotNetPlugin.Stub\DotNetPlugin.Stub.csproj" />
@@ -27,7 +33,7 @@
 
   <ItemGroup>
     <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.18.2" />
-    <PackageReference Include="UnmanagedExports.Repack" Version="1.0.4" >
+    <PackageReference Include="UnmanagedExports.Repack" Version="1.0.4">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
   </ItemGroup>
@@ -35,6 +41,21 @@
   <ItemGroup>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
   <!--

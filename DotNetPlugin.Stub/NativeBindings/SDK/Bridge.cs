@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
+using DotNetPlugin.NativeBindings.Win32;
 
 namespace DotNetPlugin.NativeBindings.SDK
 {
@@ -147,6 +150,88 @@ namespace DotNetPlugin.NativeBindings.SDK
             public FUNCTION function;
             public LOOP loop;
             public FUNCTION args;
+        }
+
+        [Serializable]
+        public struct ICONDATA
+        {
+            public IntPtr data;
+            public nuint size;
+
+            private static unsafe byte[] GetIconDataCore(Bitmap bitmap)
+            {
+                byte[] bitmapDataArray;
+
+                const PixelFormat pixelFormat = PixelFormat.Format32bppArgb;
+                var bitsPerPixel = Image.GetPixelFormatSize(pixelFormat);
+
+                var bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, pixelFormat);
+                try
+                {
+                    int pixelArraySize = bitmapData.Stride * bitmapData.Height;
+                    bitmapDataArray = new byte[sizeof(BITMAPFILEHEADER) + sizeof(BITMAPV5HEADER) + pixelArraySize];
+
+                    var bmfh = new BITMAPFILEHEADER
+                    {
+                        bfType = 0x4d42,
+                        bfSize = (uint)bitmapDataArray.Length,
+                        bfOffBits = (uint)(sizeof(BITMAPFILEHEADER) + sizeof(BITMAPV5HEADER))
+                    };
+
+                    var bmh = new BITMAPV5HEADER
+                    {
+                        bV5Size = (uint)sizeof(BITMAPV5HEADER),
+                        bV5Width = bitmapData.Width,
+                        bV5Height = -bitmapData.Height,
+                        bV5Planes = 1,
+                        bV5BitCount = (ushort)bitsPerPixel,
+                        bV5Compression = BitmapCompressionMode.BI_RGB | BitmapCompressionMode.BI_BITFIELDS,
+                        bV5RedMask = 0xFFu << 16,
+                        bV5GreenMask = 0xFFu << 8,
+                        bV5BlueMask = 0xFFu,
+                        bV5AlphaMask = 0xFFu << 24,
+                        bV5SizeImage = (uint)pixelArraySize,
+                        bV5XPelsPerMeter = 0,
+                        bV5YPelsPerMeter = 0,
+                        bV5CSType = LCSCSTYPE.LCS_sRGB,
+                        bV5Intent = LCSGAMUTMATCH.LCS_GM_GRAPHICS
+                    };
+
+                    fixed (byte* bitmapDataArrayPtr = bitmapDataArray)
+                    {
+                        byte* destPtr = bitmapDataArrayPtr;
+                        int destAvailableSize = bitmapDataArray.Length;
+
+                        Buffer.MemoryCopy(&bmfh, destPtr, destAvailableSize, sizeof(BITMAPFILEHEADER));
+                        destPtr += sizeof(BITMAPFILEHEADER);
+                        destAvailableSize -= sizeof(BITMAPFILEHEADER);
+
+                        Buffer.MemoryCopy(&bmh, destPtr, destAvailableSize, sizeof(BITMAPV5HEADER));
+                        destPtr += sizeof(BITMAPV5HEADER);
+                        destAvailableSize -= sizeof(BITMAPV5HEADER);
+
+                        Buffer.MemoryCopy(bitmapData.Scan0.ToPointer(), destPtr, destAvailableSize, pixelArraySize);
+                    }
+                }
+                finally
+                {
+                    bitmap.UnlockBits(bitmapData);
+                }
+
+                return bitmapDataArray;
+            }
+
+            public static byte[] GetIconData(Icon icon)
+            {
+                using var bitmap = icon.ToBitmap();
+                return GetIconDataCore(bitmap);
+            }
+
+            public static unsafe byte[] GetIconData(Image image)
+            {
+                using var bitmap = new Bitmap(image);
+                return GetIconDataCore(bitmap);
+            }
         }
     }
 }

@@ -121,7 +121,7 @@ namespace DotNetPlugin
             return result;
         }
 
-        public void Setup(in Plugins.PLUG_SETUPSTRUCT setupStruct) => _session.Setup(setupStruct);
+        public void Setup(in Plugins.PLUG_SETUPSTRUCT setupStruct) => _session.Setup(in setupStruct);
 
         private bool StopCore(PluginSession session)
         {
@@ -166,11 +166,8 @@ namespace DotNetPlugin
             return result;
         }
 
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //public void OnInitDebug(in Plugins.PLUG_CB_INITDEBUG info) => _session.OnInitDebug(in info);
-
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //public void OnStopDebug(in Plugins.PLUG_CB_STOPDEBUG info) => _session.OnStopDebug(in info);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void OnMenuEntry(in Plugins.PLUG_CB_MENUENTRY info) => _session.OnMenuEntry(in info);
     }
 }
 
