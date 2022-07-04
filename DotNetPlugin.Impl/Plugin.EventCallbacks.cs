@@ -27,7 +27,7 @@ namespace DotNetPlugin
 
             var CreateProcessInfo = info.CreateProcessInfo;
             var modInfo = info.modInfo;
-            var DebugFileName = info.DebugFileName;
+            string DebugFileName = info.DebugFileName;
             var fdProcessInfo = info.fdProcessInfo;
             LogInfo($"Create process {info.DebugFileName}");
         }
@@ -37,7 +37,7 @@ namespace DotNetPlugin
         {
             var LoadDll = info.LoadDll;
             var modInfo = info.modInfo;
-            var modname = info.modname;
+            string modname = info.modname;
             LogInfo($"Load DLL {modname}");
         }
     }

@@ -3,11 +3,15 @@ using System.Runtime.CompilerServices;
 
 namespace DotNetPlugin.NativeBindings
 {
-    public readonly ref struct StructRef<T> where T : unmanaged
+    /// <remarks>
+    /// Safe to use with <see href="https://docs.microsoft.com/en-us/dotnet/framework/interop/blittable-and-non-blittable-types">blittable types</see> only!
+    /// </remarks>
+    [Serializable]
+    public readonly struct StructRef<T> where T : unmanaged
     {
         private readonly IntPtr _intPtr;
 
-        internal StructRef(IntPtr intPtr)
+        public StructRef(IntPtr intPtr)
         {
             _intPtr = intPtr;
         }

@@ -144,9 +144,7 @@ namespace DotNetPlugin.NativeBindings.SDK
                 }
             }
 
-            private byte isbookmarkByte;
-            public bool isbookmark => Convert.ToBoolean(isbookmarkByte);
-
+            public BlittableBoolean isbookmark;
             public FUNCTION function;
             public LOOP loop;
             public FUNCTION args;

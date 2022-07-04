@@ -121,20 +121,8 @@ namespace DotNetPlugin.NativeBindings.SDK
             public VALUE_INFO value; //immediat
             public MEMORY_INFO memory;
             public nuint addr; //addrvalue (jumps + calls)
-
-            private byte branchByte; //jumps/calls
-            public bool branch
-            {
-                get => Convert.ToBoolean(branchByte);
-                set => branchByte = Convert.ToByte(value);
-            }
-
-            private byte callByte; //instruction is a call
-            public bool call
-            {
-                get => Convert.ToBoolean(callByte);
-                set => callByte = Convert.ToByte(value);
-            }
+            public BlittableBoolean branch; //jumps/calls
+            public BlittableBoolean call; //instruction is a call
 
             public int size;
 
