@@ -420,22 +420,19 @@ namespace DotNetPlugin.NativeBindings.SDK
         [Serializable]
         public struct PLUG_CB_INITDEBUG
         {
-            private IntPtr szFileNamePtr; // string
-            public string szFileName => szFileNamePtr.MarshalToStringUTF8();
+            public Utf8StringRef szFileName;
         }
 
         [Serializable]
         public struct PLUG_CB_CREATEPROCESS
         {
-            private IntPtr CreateProcessInfoPtr; //WAPI.CREATE_PROCESS_DEBUG_INFO
+            private IntPtr CreateProcessInfoPtr;
             public StructRef<CREATE_PROCESS_DEBUG_INFO> CreateProcessInfo => new StructRef<CREATE_PROCESS_DEBUG_INFO>(CreateProcessInfoPtr);
 
-            private IntPtr modInfoPtr; //WAPI.IMAGEHLP_MODULE64
-            public bool modInfoPresent => modInfoPtr != IntPtr.Zero;
+            private IntPtr modInfoPtr;
             public IMAGEHLP_MODULE64? modInfo => modInfoPtr.ToStruct<IMAGEHLP_MODULE64>();
 
-            private IntPtr DebugFileNamePtr; //string
-            public string DebugFileName => DebugFileNamePtr.MarshalToStringUTF8();
+            public Utf8StringRef DebugFileName;
 
             private IntPtr fdProcessInfoPtr; //WAPI.PROCESS_INFORMATION
             public StructRef<PROCESS_INFORMATION> fdProcessInfo => new StructRef<PROCESS_INFORMATION>(fdProcessInfoPtr);
@@ -475,14 +472,13 @@ namespace DotNetPlugin.NativeBindings.SDK
         [Serializable]
         public struct PLUG_CB_LOADDLL
         {
-            private IntPtr LoadDllPtr; //WAPI.LOAD_DLL_DEBUG_INFO
+            private IntPtr LoadDllPtr;
             public StructRef<LOAD_DLL_DEBUG_INFO> LoadDll => new StructRef<LOAD_DLL_DEBUG_INFO>(LoadDllPtr);
 
-            private IntPtr modInfoPtr; //WAPI.IMAGEHLP_MODULE64
+            private IntPtr modInfoPtr;
             public IMAGEHLP_MODULE64? modInfo => modInfoPtr.ToStruct<IMAGEHLP_MODULE64>();
 
-            private IntPtr modnamePtr; //string
-            public string modname => modnamePtr.MarshalToStringUTF8();
+            public Utf8StringRef modname;
         }
 
         [Serializable]
@@ -564,9 +560,7 @@ namespace DotNetPlugin.NativeBindings.SDK
             public StructRef<MSG> message => new StructRef<MSG>(messagePtr);
 
             public IntPtr result;
-
-            private byte retvalByte;
-            public bool retval => Convert.ToBoolean(retvalByte);
+            public BlittableBoolean retval;
         }
 
         [Serializable]
@@ -575,8 +569,7 @@ namespace DotNetPlugin.NativeBindings.SDK
             private IntPtr messagePtr;
             public StructRef<MSG> message => new StructRef<MSG>(messagePtr);
 
-            private byte retvalByte;
-            public bool retval => Convert.ToBoolean(retvalByte);
+            public BlittableBoolean retval;
         }
 
         [Serializable]
@@ -590,20 +583,15 @@ namespace DotNetPlugin.NativeBindings.SDK
         [Serializable]
         public struct PLUG_CB_FILTERSYMBOL
         {
-            private IntPtr symbolPtr; //string
-            public string symbol => symbolPtr.MarshalToStringUTF8();
-
-            private byte retvalByte;
-            public bool retval => Convert.ToBoolean(retvalByte);
+            public Utf8StringRef symbol;
+            public BlittableBoolean retval;
         }
 
         [Serializable]
         public struct PLUG_CB_TRACEEXECUTE
         {
             public nuint cip;
-
-            private byte stopByte;
-            public bool stop => Convert.ToBoolean(stopByte);
+            public BlittableBoolean stop;
         }
 
         [Serializable]
@@ -627,41 +615,33 @@ namespace DotNetPlugin.NativeBindings.SDK
             private IntPtr addrinfoPtr;
             public StructRef<BridgeBase.BRIDGE_ADDRINFO> addrinfo => new StructRef<BridgeBase.BRIDGE_ADDRINFO>(addrinfoPtr);
 
-            private byte retvalByte;
-            public bool retval => Convert.ToBoolean(retvalByte);
+            public BlittableBoolean retval;
         }
 
         [Serializable]
         public struct PLUG_CB_VALFROMSTRING
         {
-            private IntPtr stringPtr; //string
-            public string @string => stringPtr.MarshalToStringUTF8();
-
+            public Utf8StringRef @string;
             public nuint value;
 
             private IntPtr value_sizePtr;
             public StructRef<int> value_size => new StructRef<int>(value_sizePtr);
 
             private IntPtr isvarPtr;
-            public StructRef<byte> isvar => new StructRef<byte>(isvarPtr);
+            public StructRef<BlittableBoolean> isvar => new StructRef<BlittableBoolean>(isvarPtr);
 
             private IntPtr hexonlyPtr;
-            public StructRef<byte> hexonly => new StructRef<byte>(hexonlyPtr);
+            public StructRef<BlittableBoolean> hexonly => new StructRef<BlittableBoolean>(hexonlyPtr);
 
-            private byte retvalByte;
-            public bool retval => Convert.ToBoolean(retvalByte);
+            public BlittableBoolean retval;
         }
 
         [Serializable]
         public struct PLUG_CB_VALTOSTRING
         {
-            private IntPtr stringPtr; //string
-            public string @string => stringPtr.MarshalToStringUTF8();
-
+            public Utf8StringRef @string;
             public nuint value;
-
-            private byte retvalByte;
-            public bool retval => Convert.ToBoolean(retvalByte);
+            public BlittableBoolean retval;
         }
 
         [Serializable]

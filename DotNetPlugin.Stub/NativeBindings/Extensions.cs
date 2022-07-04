@@ -124,6 +124,9 @@ namespace DotNetPlugin.NativeBindings
             return (T)Marshal.PtrToStructure(intPtr, typeof(T));
         }
 
+        /// <remarks>
+        /// Safe to use with <see href="https://docs.microsoft.com/en-us/dotnet/framework/interop/blittable-and-non-blittable-types">blittable types</see> only!
+        /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe ref readonly T ToStructUnsafe<T>(this IntPtr intPtr) where T : unmanaged
         {
