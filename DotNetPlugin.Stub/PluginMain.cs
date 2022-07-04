@@ -28,7 +28,7 @@ namespace DotNetPlugin
         private static int s_pluginHandle;
         private static Plugins.PLUG_SETUPSTRUCT s_setupStruct;
 
-        private static Assembly TryLoadAssemblyFrom(AssemblyName assemblyName, string location, bool loadFromMemory = false)
+        private static Assembly TryLoadAssemblyFrom(AssemblyName assemblyName, string location, bool tryLoadFromMemory = false)
         {
             var pluginBasePath = Path.GetDirectoryName(location);
             var dllPath = Path.Combine(pluginBasePath, assemblyName.Name + ".dll");
@@ -36,12 +36,16 @@ namespace DotNetPlugin
             if (!File.Exists(dllPath))
                 return null;
 
-            if (loadFromMemory)
+            if (tryLoadFromMemory)
             {
-                return Assembly.Load(File.ReadAllBytes(dllPath));
+                var assemblyBytes = File.ReadAllBytes(dllPath);
+                // first we try to load the assembly from memory so that it doesn't get locked
+                try { return Assembly.Load(assemblyBytes); }
+                // mixed-mode assemblies can't be loaded from memory, so we resort to loading it from the disk
+                catch { }
             }
-            else
-                return Assembly.LoadFile(dllPath);
+
+            return Assembly.LoadFile(dllPath);
         }
 
         static PluginMain()
@@ -73,8 +77,8 @@ namespace DotNetPlugin
                         return typeof(PluginMain).Assembly;
 
                     return
-                        (ImplAssemblyLocation != null ? TryLoadAssemblyFrom(assemblyName, ImplAssemblyLocation, loadFromMemory: true) : null) ??
-                        TryLoadAssemblyFrom(assemblyName, typeof(PluginMain).Assembly.Location, loadFromMemory: true);
+                        (ImplAssemblyLocation != null ? TryLoadAssemblyFrom(assemblyName, ImplAssemblyLocation, tryLoadFromMemory: true) : null) ??
+                        TryLoadAssemblyFrom(assemblyName, typeof(PluginMain).Assembly.Location, tryLoadFromMemory: true);
                 };
             }
 
