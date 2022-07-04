@@ -190,14 +190,14 @@ namespace DotNetPlugin
 
         public Menu SetVisible(bool value)
         {
-            Plugins._plugin_menusetvisible(Parent._menus.PluginHandle, Handle, value);
+            Plugins._plugin_menusetvisible(_menus.PluginHandle, Handle, value);
 
             return this;
         }
 
         public Menu SetName(string value)
         {
-            Plugins._plugin_menusetname(Parent._menus.PluginHandle, Handle, value);
+            Plugins._plugin_menusetname(_menus.PluginHandle, Handle, value);
 
             return this;
         }
