@@ -171,42 +171,36 @@ namespace DotNetPlugin.NativeBindings.SDK
                     int pixelArraySize = bitmapData.Stride * bitmapData.Height;
                     bitmapDataArray = new byte[sizeof(BITMAPFILEHEADER) + sizeof(BITMAPV5HEADER) + pixelArraySize];
 
-                    var bmfh = new BITMAPFILEHEADER
-                    {
-                        bfType = 0x4d42,
-                        bfSize = (uint)bitmapDataArray.Length,
-                        bfOffBits = (uint)(sizeof(BITMAPFILEHEADER) + sizeof(BITMAPV5HEADER))
-                    };
-
-                    var bmh = new BITMAPV5HEADER
-                    {
-                        bV5Size = (uint)sizeof(BITMAPV5HEADER),
-                        bV5Width = bitmapData.Width,
-                        bV5Height = -bitmapData.Height,
-                        bV5Planes = 1,
-                        bV5BitCount = (ushort)bitsPerPixel,
-                        bV5Compression = BitmapCompressionMode.BI_RGB | BitmapCompressionMode.BI_BITFIELDS,
-                        bV5RedMask = 0xFFu << 16,
-                        bV5GreenMask = 0xFFu << 8,
-                        bV5BlueMask = 0xFFu,
-                        bV5AlphaMask = 0xFFu << 24,
-                        bV5SizeImage = (uint)pixelArraySize,
-                        bV5XPelsPerMeter = 0,
-                        bV5YPelsPerMeter = 0,
-                        bV5CSType = LCSCSTYPE.LCS_sRGB,
-                        bV5Intent = LCSGAMUTMATCH.LCS_GM_GRAPHICS
-                    };
-
                     fixed (byte* bitmapDataArrayPtr = bitmapDataArray)
                     {
                         byte* destPtr = bitmapDataArrayPtr;
                         int destAvailableSize = bitmapDataArray.Length;
 
-                        Buffer.MemoryCopy(&bmfh, destPtr, destAvailableSize, sizeof(BITMAPFILEHEADER));
+                        ref BITMAPFILEHEADER bmfh = ref *(BITMAPFILEHEADER*)destPtr;
+                        bmfh.bfType = 0x4d42;
+                        bmfh.bfSize = (uint)bitmapDataArray.Length;
+                        bmfh.bfOffBits = (uint)(sizeof(BITMAPFILEHEADER) + sizeof(BITMAPV5HEADER));
+
                         destPtr += sizeof(BITMAPFILEHEADER);
                         destAvailableSize -= sizeof(BITMAPFILEHEADER);
 
-                        Buffer.MemoryCopy(&bmh, destPtr, destAvailableSize, sizeof(BITMAPV5HEADER));
+                        ref BITMAPV5HEADER bmh = ref *(BITMAPV5HEADER*)destPtr;
+                        bmh.bV5Size = (uint)sizeof(BITMAPV5HEADER);
+                        bmh.bV5Width = bitmapData.Width;
+                        bmh.bV5Height = -bitmapData.Height;
+                        bmh.bV5Planes = 1;
+                        bmh.bV5BitCount = (ushort)bitsPerPixel;
+                        bmh.bV5Compression = BitmapCompressionMode.BI_RGB | BitmapCompressionMode.BI_BITFIELDS;
+                        bmh.bV5RedMask = 0xFFu << 16;
+                        bmh.bV5GreenMask = 0xFFu << 8;
+                        bmh.bV5BlueMask = 0xFFu;
+                        bmh.bV5AlphaMask = 0xFFu << 24;
+                        bmh.bV5SizeImage = (uint)pixelArraySize;
+                        bmh.bV5XPelsPerMeter = 0;
+                        bmh.bV5YPelsPerMeter = 0;
+                        bmh.bV5CSType = LCSCSTYPE.LCS_sRGB;
+                        bmh.bV5Intent = LCSGAMUTMATCH.LCS_GM_GRAPHICS;
+
                         destPtr += sizeof(BITMAPV5HEADER);
                         destAvailableSize -= sizeof(BITMAPV5HEADER);
 
