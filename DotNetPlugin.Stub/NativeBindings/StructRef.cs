@@ -18,6 +18,6 @@ namespace DotNetPlugin.NativeBindings
 
         public bool HasValue => _intPtr != IntPtr.Zero;
 
-        public ref readonly T Value { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _intPtr.ToStructUnsafe<T>(); }
+        public ref T Value { [MethodImpl(MethodImplOptions.AggressiveInlining)] get => ref _intPtr.ToStructUnsafe<T>(); }
     }
 }

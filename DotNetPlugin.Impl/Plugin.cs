@@ -35,7 +35,7 @@ namespace DotNetPlugin
             return true;
         }
 
-        public override void Setup(in Plugins.PLUG_SETUPSTRUCT setupStruct)
+        public override void Setup(ref Plugins.PLUG_SETUPSTRUCT setupStruct)
         {
             // Do additional UI setup (apart from menus) here.
         }

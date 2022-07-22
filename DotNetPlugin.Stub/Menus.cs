@@ -14,7 +14,7 @@ namespace DotNetPlugin
         private int _lastId;
         internal Dictionary<int, MenuItem> _menuItemsById;
 
-        internal Menus(int pluginHandle, in Plugins.PLUG_SETUPSTRUCT setupStruct)
+        internal Menus(int pluginHandle, ref Plugins.PLUG_SETUPSTRUCT setupStruct)
         {
             PluginHandle = pluginHandle;
 
@@ -179,7 +179,7 @@ namespace DotNetPlugin
                     size = (nuint)iconArray.Length
                 };
 
-                Plugins._plugin_menuseticon(Handle, in iconStruct);
+                Plugins._plugin_menuseticon(Handle, ref iconStruct);
             }
 
             return this;
@@ -242,7 +242,7 @@ namespace DotNetPlugin
                     size = (nuint)iconArray.Length
                 };
 
-                Plugins._plugin_menuentryseticon(Parent._menus.PluginHandle, Id, in iconStruct);
+                Plugins._plugin_menuentryseticon(Parent._menus.PluginHandle, Id, ref iconStruct);
             }
 
             return this;
