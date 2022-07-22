@@ -131,9 +131,14 @@ namespace DotNetPlugin.NativeBindings
         public static unsafe ref T ToStructUnsafe<T>(this IntPtr intPtr) where T : unmanaged
         {
             if (intPtr == IntPtr.Zero)
-                throw new ArgumentException("Invalid pointer.", nameof(intPtr));
+                ThrowInvalidPointerException(intPtr);
 
             return ref *(T*)intPtr.ToPointer();
+
+            static void ThrowInvalidPointerException(IntPtr intPtr)
+            {
+                throw new ArgumentException("Invalid pointer.", nameof(intPtr));
+            }
         }
     }
 }
