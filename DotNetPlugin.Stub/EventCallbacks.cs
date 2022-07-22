@@ -26,7 +26,7 @@ namespace DotNetPlugin
 
     internal static class EventCallbacks
     {
-        private delegate void Callback<T>(in T info) where T : unmanaged;
+        private delegate void Callback<T>(ref T info) where T : unmanaged;
 
         private delegate void InvokeCallbackDelegate<T>(Callback<T> callback, IntPtr callbackInfo) where T : unmanaged;
 
@@ -35,7 +35,7 @@ namespace DotNetPlugin
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void InvokeCallback<T>(Callback<T> callback, IntPtr callbackInfo) where T : unmanaged =>
-            callback(callbackInfo.ToStructUnsafe<T>());
+            callback(ref callbackInfo.ToStructUnsafe<T>());
 
         private static Plugins.CBPLUGIN BuildCallback(PluginBase plugin, MethodInfo method, Type eventInfoType)
         {
@@ -133,7 +133,7 @@ namespace DotNetPlugin
                 Type eventInfoType;
                 if (methodParams.Length != 1 ||
                     (eventInfoType = (eventInfoParam = methodParams[0]).ParameterType) != typeof(IntPtr) &&
-                     !(eventInfoParam.IsIn && !eventInfoParam.IsOut && IsValidCallbackInfoType(eventType, eventInfoType.GetElementType())))
+                     !(eventInfoType.IsByRef && !eventInfoParam.IsIn && !eventInfoParam.IsOut && IsValidCallbackInfoType(eventType, eventInfoType.GetElementType())))
                 {
                     PluginBase.LogError($"Registration of event callback {eventType} is skipped. Method '{method.Name}' has an invalid signature.");
                     continue;

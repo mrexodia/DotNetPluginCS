@@ -7,14 +7,14 @@ namespace DotNetPlugin
     partial class Plugin
     {
         [EventCallback(Plugins.CBTYPE.CB_INITDEBUG)]
-        public static void OnInitDebug(in Plugins.PLUG_CB_INITDEBUG info)
+        public static void OnInitDebug(ref Plugins.PLUG_CB_INITDEBUG info)
         {
             var szFileName = info.szFileName;
             LogInfo($"DotNet test debugging of file {szFileName} started!");
         }
 
         [EventCallback(Plugins.CBTYPE.CB_STOPDEBUG)]
-        public static void OnStopDebug(in Plugins.PLUG_CB_STOPDEBUG info)
+        public static void OnStopDebug(ref Plugins.PLUG_CB_STOPDEBUG info)
         {
             LogInfo($"DotNet test debugging stopped!");
         }
@@ -33,7 +33,7 @@ namespace DotNetPlugin
         }
 
         [EventCallback(Plugins.CBTYPE.CB_LOADDLL)]
-        public static void OnLoadDll(in Plugins.PLUG_CB_LOADDLL info)
+        public static void OnLoadDll(ref Plugins.PLUG_CB_LOADDLL info)
         {
             var LoadDll = info.LoadDll;
             var modInfo = info.modInfo;

@@ -131,7 +131,7 @@ namespace DotNetPlugin
                 return false;
             }
 
-            Session.Setup(s_setupStruct);
+            Session.Setup(ref s_setupStruct);
 
             PluginBase.LogInfo("Successfully loaded the implementation assembly.");
             return true;
@@ -242,7 +242,7 @@ namespace DotNetPlugin
         {
             s_setupStruct = setupStruct;
 
-            Session.Setup(in setupStruct);
+            Session.Setup(ref setupStruct);
         }
 
         [DllExport("plugstop", CallingConvention.Cdecl)]
@@ -281,9 +281,9 @@ namespace DotNetPlugin
 #endif
 
         [DllExport("CBMENUENTRY", CallingConvention.Cdecl)]
-        public static void CBMENUENTRY(Plugins.CBTYPE cbType, in Plugins.PLUG_CB_MENUENTRY info)
+        public static void CBMENUENTRY(Plugins.CBTYPE cbType, ref Plugins.PLUG_CB_MENUENTRY info)
         {
-            Session.OnMenuEntry(in info);
+            Session.OnMenuEntry(ref info);
         }
     }
 }

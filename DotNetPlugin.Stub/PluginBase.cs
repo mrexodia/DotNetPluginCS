@@ -50,11 +50,11 @@ namespace DotNetPlugin
 
         protected virtual void SetupMenu(Menus menus) { }
 
-        internal void SetupInternal(in Plugins.PLUG_SETUPSTRUCT setupStruct)
+        internal void SetupInternal(ref Plugins.PLUG_SETUPSTRUCT setupStruct)
         {
             HostWindow = new Win32Window(setupStruct.hwndDlg);
 
-            _menus = new Menus(PluginHandle, in setupStruct);
+            _menus = new Menus(PluginHandle, ref setupStruct);
 
             try { SetupMenu(_menus); }
             catch (MenuException ex)
@@ -63,10 +63,10 @@ namespace DotNetPlugin
                 _menus.Clear();
             }
 
-            Setup(in setupStruct);
+            Setup(ref setupStruct);
         }
 
-        public virtual void Setup(in Plugins.PLUG_SETUPSTRUCT setupStruct) { }
+        public virtual void Setup(ref Plugins.PLUG_SETUPSTRUCT setupStruct) { }
 
         public bool Stop()
         {
@@ -97,7 +97,7 @@ namespace DotNetPlugin
 
         public virtual Task<bool> StopAsync() => Task.FromResult(true);
 
-        void IPlugin.OnMenuEntry(in Plugins.PLUG_CB_MENUENTRY info)
+        void IPlugin.OnMenuEntry(ref Plugins.PLUG_CB_MENUENTRY info)
         {
             MenuItem menuItem;
             lock (MenusSyncObj)

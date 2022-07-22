@@ -304,10 +304,10 @@ namespace DotNetPlugin.NativeBindings.SDK
         public static extern bool _plugin_menuaddseparator(int hMenu);
 
         [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
-        public static extern void _plugin_menuseticon(int hMenu, in BridgeBase.ICONDATA icon);
+        public static extern void _plugin_menuseticon(int hMenu, ref BridgeBase.ICONDATA icon);
 
         [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
-        public static extern void _plugin_menuentryseticon(int pluginHandle, int hEntry, in BridgeBase.ICONDATA icon);
+        public static extern void _plugin_menuentryseticon(int pluginHandle, int hEntry, ref BridgeBase.ICONDATA icon);
 
         [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
         public static extern void _plugin_menuentrysetchecked(int pluginHandle, int hEntry, bool @checked);

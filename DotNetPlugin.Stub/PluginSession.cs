@@ -80,7 +80,7 @@ namespace DotNetPlugin
         }
 
         public bool Init() => _plugin.InitInternal();
-        public void Setup(in Plugins.PLUG_SETUPSTRUCT setupStruct) => _plugin.SetupInternal(in setupStruct);
+        public void Setup(ref Plugins.PLUG_SETUPSTRUCT setupStruct) => _plugin.SetupInternal(ref setupStruct);
         public bool Stop()
         {
 #if ALLOW_UNLOADING
@@ -96,6 +96,6 @@ namespace DotNetPlugin
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void OnMenuEntry(in Plugins.PLUG_CB_MENUENTRY info) => ((IPlugin)_plugin).OnMenuEntry(in info);
+        public void OnMenuEntry(ref Plugins.PLUG_CB_MENUENTRY info) => ((IPlugin)_plugin).OnMenuEntry(ref info);
     }
 }

@@ -10,9 +10,9 @@ namespace DotNetPlugin
         int PluginHandle { get; }
 
         bool Init();
-        void Setup(in Plugins.PLUG_SETUPSTRUCT setupStruct);
+        void Setup(ref Plugins.PLUG_SETUPSTRUCT setupStruct);
         bool Stop();
 
-        void OnMenuEntry(in Plugins.PLUG_CB_MENUENTRY info);
+        void OnMenuEntry(ref Plugins.PLUG_CB_MENUENTRY info);
     }
 }

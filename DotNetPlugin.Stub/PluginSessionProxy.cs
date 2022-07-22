@@ -121,7 +121,7 @@ namespace DotNetPlugin
             return result;
         }
 
-        public void Setup(in Plugins.PLUG_SETUPSTRUCT setupStruct) => _session.Setup(in setupStruct);
+        public void Setup(ref Plugins.PLUG_SETUPSTRUCT setupStruct) => _session.Setup(ref setupStruct);
 
         private bool StopCore(PluginSession session)
         {
@@ -167,7 +167,7 @@ namespace DotNetPlugin
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void OnMenuEntry(in Plugins.PLUG_CB_MENUENTRY info) => _session.OnMenuEntry(in info);
+        public void OnMenuEntry(ref Plugins.PLUG_CB_MENUENTRY info) => _session.OnMenuEntry(ref info);
     }
 }
 
