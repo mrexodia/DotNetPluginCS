@@ -23,5 +23,35 @@ namespace DotNetPlugin.NativeBindings.SDK
             }
             finally { Marshal.FreeHGlobal(textBuffer); }
         }
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern void GuiAddStatusBarMessage([MarshalAs(UnmanagedType.LPUTF8Str)] string msg);
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern void GuiLogClear();
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern void GuiAddLogMessage([MarshalAs(UnmanagedType.LPUTF8Str)] string msg);
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        public static extern void GuiUpdateDisassemblyView();
+
+        [DllImport(dll, CallingConvention = cdecl, ExactSpelling = true)]
+        private static extern bool GuiGetDisassembly(nuint addr, IntPtr text);
+
+        public static unsafe bool GuiGetDisassembly(nuint addr, out string text)
+        {
+            var textBuffer = Marshal.AllocHGlobal(GUI_MAX_LINE_SIZE);
+            try
+            {
+                var success = GuiGetDisassembly(addr, textBuffer);
+                text = success ? textBuffer.MarshalToStringUTF8(GUI_MAX_LINE_SIZE) : default;
+                return success;
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(textBuffer);
+            }
+        }
     }
 }
